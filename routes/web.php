@@ -1,10 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+Route::get('/order', [OrderController::class, 'showForm'])->name('order.form');
+Route::post('/order/{order}', [OrderController::class, 'addItem'])->name('order.addItem');
+Route::post('/order/{order}/submit', [OrderController::class, 'submit'])->name('order.submit');
+Route::get('/order/{order}/invoice', [OrderController::class, 'invoice'])->name('order.invoice');
+Route::post('/order/{order}/pay', [OrderController::class, 'pay'])->name('order.pay');
+
+// use Illuminate\Support\Facades\Route;
+
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 // Route::get('/order', [OrderController::class, 'create']);
 // Route::post('/order/{order}/add-item', [App\Http\Controllers\OrderController::class, 'addItem'])->name('order.addItem');

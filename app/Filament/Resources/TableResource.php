@@ -8,7 +8,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table as TablesTable;
 use Illuminate\Support\Facades\Storage;
@@ -34,10 +33,11 @@ class TableResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nomor_meja')->label('Nomor Meja'),
-                ImageColumn::make('qr_code_path')
-                    ->disk('public')
-                    ->label('QR Code')
-                    ->size(100),
+                TextColumn::make('nomor_meja')->label('Nomor Meja'),
+                // ImageColumn::make('qr_code_path')
+                //     ->disk('public')
+                //     ->label('QR Code')
+                //     ->size(100),
             ])
 
             ->actions([
