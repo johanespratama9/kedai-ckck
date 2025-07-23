@@ -42,6 +42,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('id')->label('ID'),
                 Tables\Columns\TextColumn::make('customer_name')->label('Nama Konsumen'),
                 Tables\Columns\TextColumn::make('nomor_meja')->label('Meja'),
+                Tables\Columns\TextColumn::make('status')->label('status'),
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Harga')
                     ->money('IDR'),
