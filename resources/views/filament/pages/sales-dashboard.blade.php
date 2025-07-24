@@ -8,10 +8,10 @@
             <h2 class="text-gray-500 text-sm">Total Pendapatan</h2>
             <p class="text-2xl font-bold">Rp {{ number_format($this->totalPendapatan) }}</p>
         </div>
-        <div class="bg-white p-4 rounded shadow">
+        {{-- <div class="bg-white p-4 rounded shadow">
             <h2 class="text-gray-500 text-sm">Order Selesai</h2>
             <p class="text-2xl font-bold">{{ $this->orderSelesai }}</p>
-        </div>
+        </div> --}}
     </div>
 
     <div class="bg-white p-4 rounded shadow mb-6">
