@@ -10,7 +10,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
@@ -39,10 +38,20 @@ class MenuResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('foto')
-                    ->disk('public')
-                    ->size(80) // tambahkan ini agar thumbnail muncul
-                    ->url(fn($record) => $record->foto ? asset('storage/' . $record->foto) : null),
+                // ImageColumn::make('foto')
+                //     ->disk('menus')
+                //     ->size(80) // tambahkan ini agar thumbnail muncul
+                //     ->url(fn($record) => $record->foto ? asset('storage/' . $record->foto) : null),
+
+                TextColumn::make('foto')
+                    ->label('Foto ')
+                    ->html()
+                    ->formatStateUsing(function ($state) {
+                        return $state
+                        ? '<img src="' . asset('storage/' . $state) . '" width="100"/>'
+                        : '<span class="text-gray-400">Belum dibuat</span>';
+                    }),
+
                 TextColumn::make('nama')->searchable(),
                 TextColumn::make('kategori'),
                 TextColumn::make('harga'),
