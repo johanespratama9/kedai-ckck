@@ -20,32 +20,35 @@ class TableResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nomor_meja')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-            ]);
+        return $form->schema([
+            Forms\Components\TextInput::make('nomor_meja')
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->label('Nomor Meja'),
+        ]);
     }
 
     public static function table(TablesTable $table): TablesTable
     {
         return $table
             ->columns([
-                TextColumn::make('nomor_meja')->label('Nomor Meja'),
-                TextColumn::make('nomor_meja')->label('Nomor Meja'),
-                // ImageColumn::make('qr_code_path')
-                //     ->disk('public')
-                //     ->label('QR Code')
-                //     ->size(100),
-            ])
+                TextColumn::make('nomor_meja')
+                    ->label('Nomor Meja'),
+                TextColumn::make('qr_code_path')
+                    ->label('QR Code')
+                    ->html()
+                    ->formatStateUsing(function ($state) {
+                        return $state
+                        ? '<img src="' . asset('storage/' . $state) . '" width="100"/>'
+                        : '<span class="text-gray-400">Belum dibuat</span>';
+                    }),
 
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
 
                 Action::make('generate_qr')
                     ->label('Generate QR')
-                // ->icon('heroicon-0-qrcode')
                     ->color('success')
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -59,23 +62,24 @@ class TableResource extends Resource
 
                         $record->qr_code_path = $fileName;
                         $record->save();
-
                     })
                     ->successNotificationTitle('QR Code berhasil dibuat!'),
+
                 Action::make('download_qr')
+                    ->label('Regenerate QR')
+                    ->color('secondary')
                     ->action(function (Table $record) {
                         $url      = url('/order?meja=' . $record->nomor_meja);
                         $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
 
                         Storage::disk('public')->put(
                             $fileName,
-                            \QrCode::format('svg')->size(300)->generate($url)
+                            QrCode::format('svg')->size(300)->generate($url)
                         );
 
                         $record->qr_code_path = $fileName;
                         $record->save();
                     }),
-
             ]);
     }
 
