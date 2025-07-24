@@ -15,7 +15,8 @@ class OrderController extends Controller
             abort(404);
         }
 
-        $order = Order::firstOrCreate(
+        // Ambil order pending + orderItems
+        $order = Order::with('orderItems.menu')->firstOrCreate(
             ['nomor_meja' => $nomorMeja, 'status' => 'pending'],
             ['total_harga' => 0]
         );
@@ -28,7 +29,7 @@ class OrderController extends Controller
     public function addItem(Request $request, Order $order)
     {
         $data = $request->validate([
-            'customer_name' => 'required|string',
+            'customer_name' => 'required|string|max:255',
             'menu_id'       => 'required|exists:menus,id',
             'quantity'      => 'required|integer|min:1',
         ]);
@@ -36,12 +37,12 @@ class OrderController extends Controller
         $menu     = Menu::findOrFail($data['menu_id']);
         $subtotal = $menu->harga * $data['quantity'];
 
-        // Update order
+        // Update customer_name dan total_harga
         $order->customer_name = $data['customer_name'];
         $order->total_harga += $subtotal;
         $order->save();
 
-        // Buat item
+        // Tambah item
         OrderItem::create([
             'order_id' => $order->id,
             'menu_id'  => $menu->id,
@@ -56,23 +57,73 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Item berhasil ditambahkan!');
     }
 
+    public function editItem(Request $request, OrderItem $item)
+    {
+        $data = $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $menu        = $item->menu;
+        $oldQuantity = $item->quantity;
+        $diff        = $data['quantity'] - $oldQuantity;
+
+        // Update stok
+        $menu->stok -= $diff;
+        $menu->save();
+
+        // Update subtotal & quantity
+        $item->quantity = $data['quantity'];
+        $item->subtotal = $menu->harga * $data['quantity'];
+        $item->save();
+
+        // Update total harga order
+        $order              = $item->order;
+        $order->total_harga = $order->orderItems()->sum('subtotal');
+        $order->save();
+
+        return redirect()->back()->with('success', 'Item berhasil diubah!');
+    }
+
+    public function removeItem(OrderItem $item)
+    {
+        $order = $item->order;
+        $menu  = $item->menu;
+
+        // Balikkan stok
+        $menu->stok += $item->quantity;
+        $menu->save();
+
+        // Hapus item
+        $item->delete();
+
+        // Update total harga order
+        $order->total_harga = $order->orderItems()->sum('subtotal');
+        $order->save();
+
+        return redirect()->back()->with('success', 'Item berhasil dihapus!');
+    }
+
     public function submit(Order $order)
     {
         $order->status = 'submitted';
         $order->save();
-        return redirect()->route('order.invoice', $order->id);
+
+        return redirect()->route('order.invoice', $order->id)
+            ->with('success', 'Order berhasil disubmit!');
+
     }
 
     public function invoice(Order $order)
     {
+        $order->load('orderItems.menu');
         return view('order.invoice', compact('order'));
     }
 
-    // Dummy: Konfirmasi pembayaran
     public function pay(Order $order)
     {
         $order->status = 'paid';
         $order->save();
+
         return redirect()->route('order.invoice', $order->id)->with('success', 'Pembayaran berhasil!');
     }
 }

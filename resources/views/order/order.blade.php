@@ -24,7 +24,8 @@
                 @csrf
                 <div class="col-md-6">
                     <label class="form-label">Nama Konsumen</label>
-                    <input type="text" class="form-control" name="customer_name" value="{{ old('customer_name', $order->customer_name) }}" required>
+                    <input type="text" class="form-control" name="customer_name" 
+                        value="{{ old('customer_name', $order->customer_name) }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Pilih Menu</label>
@@ -45,9 +46,9 @@
             </form>
 
             <h4>📦 Item Dipesan:</h4>
-            @if($order->items->count())
+            @if($order->orderItems && $order->orderItems->count())
                 <div class="list-group mb-3">
-                    @foreach($order->items as $item)
+                    @foreach($order->orderItems as $item)
                         <div class="list-group-item d-flex align-items-center">
                             @if($item->menu->foto)
                                 <img src="{{ asset('storage/menus/'.$item->menu->foto) }}" class="menu-thumb">
