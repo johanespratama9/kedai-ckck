@@ -36,20 +36,21 @@
                     </tr>
                     </thead>
             <tbody>
-@if($order->items?->count())
-    @foreach($order->items as $item)
-        <tr class="border-b">
-            <td class="py-2 px-2">{{ $item->menu->nama }}</td>
-            <td class="py-2 px-2">{{ $item->quantity }}</td>
-            <td class="py-2 px-2 text-right">Rp{{ number_format($item->subtotal,0,',','.') }}</td>
-        </tr>
-    @endforeach
-@else
-    <tr>
-        <td colspan="3" class="py-2 px-2 text-center text-gray-500">Belum ada item.</td>
-    </tr>
-@endif
-</tbody>
+                @if($order->orderItems && $order->orderItems->count())
+                    @foreach($order->orderItems as $item)
+                        <tr class="border-b">
+                            <td class="py-2 px-2">{{ $item->menu->nama }}</td>
+                            <td class="py-2 px-2">{{ $item->quantity }}</td>
+                            <td class="py-2 px-2 text-right">Rp{{ number_format($item->subtotal,0,',','.') }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="3" class="py-2 px-2 text-center text-gray-500">Belum ada item.</td>
+                    </tr>
+                @endif
+                </tbody>
+
 
                 </table>
             </div>
