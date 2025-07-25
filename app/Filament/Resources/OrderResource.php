@@ -74,19 +74,19 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
 
-                Tables\Actions\Action::make('submit_makanan')
-                    ->label('Submit Makanan')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->action(function (Order $record) {
-                        $record->status_makanan = 'pesanan diterima';
-                        $record->save();
-                    })
-                    ->requiresConfirmation()
-                    ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
+                // Tables\Actions\Action::make('submit_makanan'),
+                // ->label('Submit Makanan')
+                // ->icon('heroicon-o-check-circle')
+                // ->color('success')
+                // ->action(function (Order $record) {
+                //     $record->status_makanan = 'pesanan diterima';
+                //     $record->save();
+                // })
+                // ->requiresConfirmation()
+                // ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

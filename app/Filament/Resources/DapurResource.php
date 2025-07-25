@@ -1,0 +1,109 @@
+<?php
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\DapurResource\Pages;
+use App\Models\Order;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class DapurResource extends Resource
+{
+    protected static ?string $model = Order::class;
+
+    protected static ?string $navigationIcon  = 'heroicon-o-fire';
+    protected static ?string $navigationLabel = 'Dapur';
+    protected static ?string $pluralLabel     = 'Pesanan Dapur';
+    protected static ?string $navigationGroup = 'Operasional';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('customer_name')
+                    ->label('Nama Konsumen')
+                    ->disabled(),
+
+                Forms\Components\TextInput::make('nomor_meja')
+                    ->label('Nomor Meja')
+                    ->disabled(),
+
+                // Forms\Components\Textarea::make('note')
+                //     ->label('Catatan')
+                //     ->rows(2)
+                //     ->disabled(),
+
+                Forms\Components\Select::make('status_makanan')
+                    ->label('Status Makanan')
+                    ->options([
+                        'pesanan sedang diproses' => 'pesanan sedang diproses',
+                        'pesanan selesai'         => 'pesanan selesai',
+                    ])
+                    ->required(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('customer_name')
+                    ->label('Nama Konsumen')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('nomor_meja')
+                    ->label('Meja')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status'),
+
+                Tables\Columns\BadgeColumn::make('status_makanan')
+                    ->label('Status Makanan')
+                    ->colors([
+                        'primary' => 'pesanan diterima',
+                        'warning' => 'pesanan sedang diproses',
+                        'success' => 'pesanan selesai',
+                    ])
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal')
+                    ->dateTime('d-m-Y H:i')
+                    ->sortable(),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+
+                // Tables\Actions\Action::make('submit_makanan')
+                //     ->label('Tandai Pesanan Diterima')
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->action(function (Order $record) {
+                //         $record->status_makanan = 'pesanan diterima';
+                //         $record->save();
+                //     })
+                //     ->requiresConfirmation()
+                //     ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListDapurs::route('/'),
+            'edit'  => Pages\EditDapur::route('/{record}/edit'),
+        ];
+    }
+}
