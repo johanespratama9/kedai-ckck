@@ -20,6 +20,11 @@ class MenuResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->name === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -18,6 +18,11 @@ class TableResource extends Resource
     protected static ?string $model          = Table::class;
     protected static ?string $navigationIcon = 'heroicon-o-table-cells';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->name === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -65,23 +70,23 @@ class TableResource extends Resource
                     })
                     ->successNotificationTitle('QR Code berhasil dibuat!'),
 
-                Action::make('regenerate_qr')
-                    ->label('Regenerate QR')
-                    ->color('secondary')
-                    ->requiresConfirmation()
-                    ->action(function (Table $record) {
-                        $url      = url('/order?meja=' . $record->nomor_meja);
-                        $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
+                // Action::make('regenerate_qr')
+                //     ->label('Regenerate QR')
+                //     ->color('secondary')
+                //     ->requiresConfirmation()
+                //     ->action(function (Table $record) {
+                //         $url      = url('/order?meja=' . $record->nomor_meja);
+                //         $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
 
-                        Storage::disk('public')->put(
-                            $fileName,
-                            QrCode::format('svg')->size(300)->generate($url)
-                        );
+                //         Storage::disk('public')->put(
+                //             $fileName,
+                //             QrCode::format('svg')->size(300)->generate($url)
+                //         );
 
-                        $record->qr_code_path = $fileName;
-                        $record->save();
-                    })
-                    ->successNotificationTitle('QR Code berhasil diperbarui!'),
+                //         $record->qr_code_path = $fileName;
+                //         $record->save();
+                //     })
+                //     ->successNotificationTitle('QR Code berhasil diperbarui!'),
 
                 Action::make('download_qr')
                     ->label('Download QR')

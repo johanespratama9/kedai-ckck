@@ -18,6 +18,10 @@ class SalesDashboard extends Page
     public $totalPendapatan;
     public $orderSelesai;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->name === 'admin';
+    }
     public function mount(): void
     {
         $this->totalOrder      = Order::count();

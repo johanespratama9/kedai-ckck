@@ -16,6 +16,11 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->name === 'admin';
+    }
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
@@ -31,9 +36,9 @@ class UserResource extends Resource
                     ->required(),
                 Select::make('role')
                     ->options([
-                        // 'admin' => 'Admin',
+                        'admin' => 'Admin',
                         'dapur' => 'Dapur',
-                        'kasir' => 'Kasir',
+                        // 'kasir' => 'Kasir',
                     ])
                     ->required(),
                 TextInput::make('password')

@@ -17,6 +17,11 @@ class OrderResource extends Resource
     protected static ?string $navigationLabel = 'Pesanan';
     protected static ?string $pluralLabel     = 'Pesanan';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->name === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
