@@ -12,6 +12,8 @@ Route::post('/order/item/{item}/remove', [OrderController::class, 'removeItem'])
 Route::post('/order/item/{item}/edit', [OrderController::class, 'editItem'])->name('order.editItem');
 Route::post('/order/{order}/submit', [OrderController::class, 'submit'])->name('order.submit');
 Route::post('/order/{order}/submit', [OrderController::class, 'submit'])->name('order.submit');
+// Route::get('/order/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('order.downloadInvoice');
+Route::get('/order/{order}/invoice/download', [OrderController::class, 'downloadInvoicePdf'])->name('order.downloadInvoice');
 
 Route::get('/order/{order}/invoice', [OrderController::class, 'invoice'])->name('order.invoice');
 Route::post('/order/{order}/pay', [OrderController::class, 'pay'])->name('order.pay');

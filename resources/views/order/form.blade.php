@@ -8,6 +8,12 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center py-6 px-4">
 <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-3xl">
+    <!-- Header logo + nama kedai -->
+    <div class="flex items-center mb-6 border-b pb-3">
+        <img src="{{ asset('storage/logo.png') }}" alt="Logo CKCK" class="h-12 w-12 mr-3">
+        <h1 class="text-2xl font-bold">Kedai CKCK</h1>
+    </div>
+
     <h1 class="text-2xl font-bold mb-2">Order - Meja {{ $nomorMeja }}</h1>
     <p class="text-gray-500 mb-6">Order ID: <span class="font-semibold">{{ $order->id }}</span></p>
 

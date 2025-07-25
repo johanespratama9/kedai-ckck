@@ -9,7 +9,16 @@
 <body class="bg-gray-100 text-gray-800">
 <div class="max-w-xl mx-auto p-4 md:p-6">
     <div class="bg-white rounded-lg shadow">
-        <div class="bg-gray-800 text-white px-4 py-3 rounded-t-lg">
+        <!-- Header logo + nama kedai -->
+        <div class="flex items-center justify-between px-4 py-3 border-b">
+            <div class="flex items-center">
+                <img src="{{ asset('storage/logo.png') }}" alt="Logo CKCK" class="h-10 w-10 mr-3">
+                <h1 class="text-lg md:text-xl font-bold">Kedai CKCK</h1>
+            </div>
+            <span class="text-gray-500 text-xs md:text-sm">Invoice</span>
+        </div>
+
+        <div class="bg-gray-800 text-white px-4 py-3">
             <h4 class="text-base md:text-lg font-semibold">🧾 Invoice Order #{{ $order->id }}</h4>
         </div>
         <div class="p-4 space-y-3 text-sm md:text-base">
@@ -35,23 +44,21 @@
                         <th class="py-2 px-2 text-right">Subtotal</th>
                     </tr>
                     </thead>
-            <tbody>
-                @if($order->orderItems && $order->orderItems->count())
-                    @foreach($order->orderItems as $item)
-                        <tr class="border-b">
-                            <td class="py-2 px-2">{{ $item->menu->nama }}</td>
-                            <td class="py-2 px-2">{{ $item->quantity }}</td>
-                            <td class="py-2 px-2 text-right">Rp{{ number_format($item->subtotal,0,',','.') }}</td>
+                    <tbody>
+                    @if($order->orderItems && $order->orderItems->count())
+                        @foreach($order->orderItems as $item)
+                            <tr class="border-b">
+                                <td class="py-2 px-2">{{ $item->menu->nama }}</td>
+                                <td class="py-2 px-2">{{ $item->quantity }}</td>
+                                <td class="py-2 px-2 text-right">Rp{{ number_format($item->subtotal,0,',','.') }}</td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="3" class="py-2 px-2 text-center text-gray-500">Belum ada item.</td>
                         </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="3" class="py-2 px-2 text-center text-gray-500">Belum ada item.</td>
-                    </tr>
-                @endif
-                </tbody>
-
-
+                    @endif
+                    </tbody>
                 </table>
             </div>
 
@@ -59,8 +66,14 @@
                 <h5 class="text-base md:text-lg font-semibold">💰 Total: Rp{{ number_format($order->total_harga,0,',','.') }}</h5>
             </div>
 
+          <a href="{{ route('order.downloadInvoice', $order->id) }}"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm md:text-base">
+                ⬇️ Download Invoice (PDF)
+            </a>
+
+
             @if($order->status !== 'paid')
-                <form method="POST" action="{{ route('order.pay', $order->id) }}" class="flex justify-end">
+                <form method="POST" action="{{ route('order.pay', $order->id) }}" class="flex justify-end mt-2">
                     @csrf
                     <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm md:text-base">
                         ✅ Konfirmasi Pembayaran (Dummy)

@@ -13,6 +13,7 @@ class Order extends Model
         'customer_name',
         'total_harga',
         'status',
+        'status_makanan',
     ];
 
     public function orderItems()

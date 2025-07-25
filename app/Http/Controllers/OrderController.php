@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class OrderController extends Controller
 {
@@ -105,7 +107,8 @@ class OrderController extends Controller
 
     public function submit(Order $order)
     {
-        $order->status = 'submitted';
+        $order->status         = 'submitted';
+        $order->status_makanan = 'pesanan diterima';
         $order->save();
 
         return redirect()->route('order.invoice', $order->id)
@@ -126,4 +129,13 @@ class OrderController extends Controller
 
         return redirect()->route('order.invoice', $order->id)->with('success', 'Pembayaran berhasil!');
     }
+
+    public function downloadInvoicePdf(Order $order)
+    {
+        $pdf = $pdf = Pdf::loadView('order.struck', compact('order'))
+            ->setPaper('a4', 'portrait'); // optional: atur ukuran kertas
+
+        return $pdf->download('invoice_order_' . $order->id . '.pdf');
+    }
+
 }

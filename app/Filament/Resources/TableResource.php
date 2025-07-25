@@ -65,9 +65,10 @@ class TableResource extends Resource
                     })
                     ->successNotificationTitle('QR Code berhasil dibuat!'),
 
-                Action::make('download_qr')
+                Action::make('regenerate_qr')
                     ->label('Regenerate QR')
                     ->color('secondary')
+                    ->requiresConfirmation()
                     ->action(function (Table $record) {
                         $url      = url('/order?meja=' . $record->nomor_meja);
                         $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
@@ -79,8 +80,55 @@ class TableResource extends Resource
 
                         $record->qr_code_path = $fileName;
                         $record->save();
-                    }),
+                    })
+                    ->successNotificationTitle('QR Code berhasil diperbarui!'),
+
+                Action::make('download_qr')
+                    ->label('Download QR')
+                    ->color('info')
+                    ->icon('heroicon-o-arrow-down-tray')                    // ganti icon yang ada
+                    ->visible(fn($record) => ! empty($record->qr_code_path)) // tampil hanya jika sudah ada
+                    ->url(fn($record) => $record->qr_code_path ? asset('storage/' . $record->qr_code_path) : null)
+                    ->openUrlInNewTab(),
             ]);
+
+        // ->actions([
+        //     Tables\Actions\EditAction::make(),
+
+        //     Action::make('generate_qr')
+        //         ->label('Generate QR')
+        //         ->color('success')
+        //         ->requiresConfirmation()
+        //         ->action(function ($record) {
+        //             $url      = url('/order?meja=' . $record->nomor_meja);
+        //             $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
+
+        //             Storage::disk('public')->put(
+        //                 $fileName,
+        //                 QrCode::format('svg')->size(300)->generate($url)
+        //             );
+
+        //             $record->qr_code_path = $fileName;
+        //             $record->save();
+        //         })
+        //         ->successNotificationTitle('QR Code berhasil dibuat!'),
+
+        //     Action::make('download_qr')
+        //         ->label('Regenerate QR')
+        //         ->color('secondary')
+        //         ->action(function (Table $record) {
+        //             $url      = url('/order?meja=' . $record->nomor_meja);
+        //             $fileName = 'qrcodes/meja_' . $record->nomor_meja . '.svg';
+
+        //             Storage::disk('public')->put(
+        //                 $fileName,
+        //                 QrCode::format('svg')->size(300)->generate($url)
+        //             );
+
+        //             $record->qr_code_path = $fileName;
+        //             $record->save();
+        //         }),
+        // ]);
     }
 
     public static function getRelations(): array
