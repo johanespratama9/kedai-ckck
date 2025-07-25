@@ -56,13 +56,19 @@ class OrderResource extends Resource
                     ->label('Meja')
                     ->searchable(), // ✅ tambahkan searchable
 
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->searchable(), // ✅ tambahkan searchable
-
-                Tables\Columns\TextColumn::make('status_makanan')
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status Pembayaran')
+                    ->colors([
+                        'primary' => 'Submited',
+                        'success' => 'paid',
+                    ]),
+                Tables\Columns\BadgeColumn::make('status_makanan')
                     ->label('Status Makanan')
-                    ->searchable(),
+                    ->colors([
+                        'primary' => 'pesanan diterima',
+                        'warning' => 'pesanan sedang diproses',
+                        'success' => 'pesanan selesai',
+                    ]),
 
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Harga')
