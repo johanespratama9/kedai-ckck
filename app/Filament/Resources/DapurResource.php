@@ -82,6 +82,8 @@ class DapurResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn(Order $record) => $record->status === 'paid'),
 
                 // Tables\Actions\Action::make('submit_makanan')
                 //     ->label('Tandai Pesanan Diterima')
@@ -97,6 +99,12 @@ class DapurResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('status', 'paid');
     }
 
     public static function getPages(): array
