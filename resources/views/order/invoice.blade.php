@@ -66,12 +66,12 @@
                 <h5 class="text-base md:text-lg font-semibold">💰 Total: Rp{{ number_format($order->total_harga,0,',','.') }}</h5>
             </div>
 
-          <a href="{{ route('order.downloadInvoice', $order->id) }}"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm md:text-base">
-                ⬇️ Download Invoice (PDF)
-            </a>
-
-
+         @if($order->status === 'paid')
+                <a href="{{ route('order.downloadInvoice', $order->id) }}"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm md:text-base">
+                    ⬇️ Download Invoice (PDF)
+                </a>
+            @endif
             @if($order->status !== 'paid')
                 <form method="POST" action="{{ route('order.pay', $order->id) }}" class="flex justify-end mt-2">
                     @csrf
