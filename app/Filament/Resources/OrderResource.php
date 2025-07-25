@@ -39,18 +39,36 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('ID'),
-                Tables\Columns\TextColumn::make('customer_name')->label('Nama Konsumen'),
-                Tables\Columns\TextColumn::make('nomor_meja')->label('Meja'),
-                Tables\Columns\TextColumn::make('status')->label('Status'),
-                Tables\Columns\TextColumn::make('status_makanan')->label('Status Makanan'),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('customer_name')
+                    ->label('Nama Konsumen')
+                    ->searchable(), // ✅ tambahkan searchable
+
+                Tables\Columns\TextColumn::make('nomor_meja')
+                    ->label('Meja')
+                    ->searchable(), // ✅ tambahkan searchable
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->searchable(), // ✅ tambahkan searchable
+
+                Tables\Columns\TextColumn::make('status_makanan')
+                    ->label('Status Makanan')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Harga')
                     ->money('IDR'),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal')
-                    ->dateTime('d-m-Y H:i'),
+                    ->dateTime('d-m-Y H:i')
+                    ->sortable(), // ✅ tambahkan sortable
             ])
+            ->defaultSort('created_at', 'desc') // ✅ tampilkan data terbaru di atas
             ->filters([
                 // Tambahkan filter jika perlu
             ])
@@ -59,7 +77,6 @@ class OrderResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
 
-                // 🔥 Custom action: Submit status makanan
                 Tables\Actions\Action::make('submit_makanan')
                     ->label('Submit Makanan')
                     ->icon('heroicon-o-check-circle')
