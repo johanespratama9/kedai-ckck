@@ -42,8 +42,8 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('id')->label('ID'),
                 Tables\Columns\TextColumn::make('customer_name')->label('Nama Konsumen'),
                 Tables\Columns\TextColumn::make('nomor_meja')->label('Meja'),
-                Tables\Columns\TextColumn::make('status')->label('status'),
-                Tables\Columns\TextColumn::make('status_makana')->label('status makanan'),
+                Tables\Columns\TextColumn::make('status')->label('Status'),
+                Tables\Columns\TextColumn::make('status_makanan')->label('Status Makanan'),
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Harga')
                     ->money('IDR'),
@@ -52,12 +52,24 @@ class OrderResource extends Resource
                     ->dateTime('d-m-Y H:i'),
             ])
             ->filters([
-                // tambahkan filter kalau mau
+                // Tambahkan filter jika perlu
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+
+                // 🔥 Custom action: Submit status makanan
+                Tables\Actions\Action::make('submit_makanan')
+                    ->label('Submit Makanan')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->action(function (Order $record) {
+                        $record->status_makanan = 'pesanan diterima';
+                        $record->save();
+                    })
+                    ->requiresConfirmation()
+                    ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
