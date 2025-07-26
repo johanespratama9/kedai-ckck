@@ -18,6 +18,13 @@ class DapurResource extends Resource
     protected static ?string $pluralLabel     = 'Pesanan Dapur';
     protected static ?string $navigationGroup = 'Operasional';
 
+    public function getInfolistComponents(): array
+    {
+        return [
+            ViewEntry::make('invoice')
+                ->view('filament.resources.dapur-resource.invoice'),
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -80,21 +87,18 @@ class DapurResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
                     ->visible(fn(Order $record) => $record->status === 'paid'),
-
-                // Tables\Actions\Action::make('submit_makanan')
-                //     ->label('Tandai Pesanan Diterima')
-                //     ->icon('heroicon-o-check-circle')
-                //     ->color('success')
-                //     ->action(function (Order $record) {
-                //         $record->status_makanan = 'pesanan diterima';
-                //         $record->save();
-                //     })
-                //     ->requiresConfirmation()
-                //     ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
+                Tables\Actions\Action::make('lihat_invoice')
+                    ->label('Lihat Invoice')
+                    ->icon('heroicon-o-document-text')
+                    ->modalHeading(fn($record) => 'Invoice Order #' . $record->id)
+                    ->modalContent(fn($record) => view('components.invoice', ['record' => $record]))
+                    ->modalSubmitAction(false)
+                    ->color('primary'),
             ])
+
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
