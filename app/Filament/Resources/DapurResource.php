@@ -25,6 +25,7 @@ class DapurResource extends Resource
                 ->view('filament.resources.dapur-resource.invoice'),
         ];
     }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -87,7 +88,6 @@ class DapurResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
                     ->visible(fn(Order $record) => $record->status === 'paid'),
                 Tables\Actions\Action::make('lihat_invoice')
@@ -98,9 +98,9 @@ class DapurResource extends Resource
                     ->modalSubmitAction(false)
                     ->color('primary'),
             ])
-
+            // Hilangkan DeleteBulkAction
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                // Tidak ada DeleteBulkAction
             ]);
     }
 
@@ -115,6 +115,7 @@ class DapurResource extends Resource
         return [
             'index' => Pages\ListDapurs::route('/'),
             'edit'  => Pages\EditDapur::route('/{record}/edit'),
+            // Hilangkan 'create' page
         ];
     }
 }
