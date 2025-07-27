@@ -32,6 +32,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
+            'keterangan'    => 'nullable|string',
             'menu_id'       => 'required|exists:menus,id',
             'quantity'      => 'required|integer|min:1',
         ]);
@@ -41,6 +42,7 @@ class OrderController extends Controller
 
         // Update customer_name dan total_harga
         $order->customer_name = $data['customer_name'];
+        $order->keterangan    = $data['keterangan'] ?? '';
         $order->total_harga += $subtotal;
         $order->save();
 

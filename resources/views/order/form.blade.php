@@ -30,45 +30,51 @@
     <h1 class="text-2xl font-bold mb-2">Order - Meja {{ $nomorMeja }}</h1>
     <p class="text-gray-500 mb-6">Order ID: <span class="font-semibold">{{ $order->id }}</span></p>
 
-    <form method="POST" action="{{ route('order.addItem', $order->id) }}" class="space-y-4 mb-8">
-        @csrf
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Nama Customer</label>
-            <input type="text" name="customer_name" value="{{ old('customer_name', $order->customer_name) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+ <form method="POST" action="{{ route('order.addItem', $order->id) }}" class="space-y-4 mb-8">
+    @csrf
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Nama Customer</label>
+        <input type="text" name="customer_name" value="{{ old('customer_name', $order->customer_name) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Menu</label>
+        <div class="flex items-start space-x-4">
+            <select id="menuSelect" name="menu_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                @foreach($menus as $menu)
+                    <option 
+                        value="{{ $menu->id }}" 
+                        data-foto="{{ asset('storage/' . $menu->foto) }}">
+                        {{ $menu->nama }} (Rp {{ number_format($menu->harga) }})
+                    </option>
+                @endforeach
+            </select>
+            <!-- Preview gambar menu -->
+            <img id="menuPreview" 
+                src="{{ asset('storage/' . $menus->first()->foto) }}" 
+                alt="Preview" 
+                class="h-20 w-20 object-cover rounded border">
         </div>
+    </div>
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Menu</label>
-            <div class="flex items-start space-x-4">
-                <select id="menuSelect" name="menu_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    @foreach($menus as $menu)
-                        <option 
-                            value="{{ $menu->id }}" 
-                            data-foto="{{ asset('storage/' . $menu->foto) }}">
-                            {{ $menu->nama }} (Rp {{ number_format($menu->harga) }})
-                        </option>
-                    @endforeach
-                </select>
-                <!-- Preview gambar menu -->
-                <img id="menuPreview" 
-                    src="{{ asset('storage/' . $menus->first()->foto) }}" 
-                    alt="Preview" 
-                    class="h-20 w-20 object-cover rounded border">
-            </div>
-        </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Jumlah</label>
+        <input type="number" name="quantity" value="1" min="1" required class="mt-1 block w-24 rounded-md border-gray-300 shadow-sm">
+    </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Keterangan</label>
+   <input type="text" name="keterangan" value="{{ old('keterangan', $order->keterangan) }}"
+           placeholder="Contoh: tanpa pedas, extra saus" 
+           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+</div>
 
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Jumlah</label>
-            <input type="number" name="quantity" value="1" min="1" required class="mt-1 block w-24 rounded-md border-gray-300 shadow-sm">
-        </div>
+    <div>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Tambah Item</button>
+    </div>
+</form>
 
-        <div>
-            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Tambah Item</button>
-        </div>
-    </form>
-
-    <h2 class="text-xl font-semibold mb-4">Detail Order</h2>
 
     <h2 class="text-xl font-semibold mb-4">Detail Order</h2>
 

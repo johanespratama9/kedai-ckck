@@ -34,6 +34,16 @@
                 <span class="text-gray-600">Status:</span>
                 <span class="font-semibold uppercase">{{ $order->status }}</span>
             </div>
+         @if($order->status === 'paid')
+            <div class="flex justify-between">
+                <span class="text-gray-600">Status Makanan:</span>
+                <span class="font-semibold uppercase">{{ $order->status_makanan }}</span>
+            </div>
+            @endif
+            <div class="flex justify-between">
+                <span class="text-gray-600">Catatan:</span>
+                <span class="font-semibold uppercase">{{ $order->keterangan }}</span>
+            </div>
 
             <div class="overflow-x-auto mt-4">
                 <table class="min-w-full text-left text-xs md:text-sm">

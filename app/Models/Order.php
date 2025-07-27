@@ -14,6 +14,7 @@ class Order extends Model
         'total_harga',
         'status',
         'status_makanan',
+        'keterangan',
     ];
 
     public function orderItems()
