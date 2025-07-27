@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuSelect = document.getElementById('menuSelect');
+        const menuPreview = document.getElementById('menuPreview');
+
+        menuSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const fotoUrl = selectedOption.getAttribute('data-foto');
+            menuPreview.src = fotoUrl;
+        });
+    });
+</script>
+
     <meta charset="UTF-8">
     <title>Order - Meja {{ $nomorMeja }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,13 +38,25 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700">Pilih Menu</label>
-            <select name="menu_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                @foreach($menus as $menu)
-                    <option value="{{ $menu->id }}">{{ $menu->nama }} (Rp {{ number_format($menu->harga) }})</option>
-                @endforeach
-            </select>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Menu</label>
+            <div class="flex items-start space-x-4">
+                <select id="menuSelect" name="menu_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    @foreach($menus as $menu)
+                        <option 
+                            value="{{ $menu->id }}" 
+                            data-foto="{{ asset('storage/' . $menu->foto) }}">
+                            {{ $menu->nama }} (Rp {{ number_format($menu->harga) }})
+                        </option>
+                    @endforeach
+                </select>
+                <!-- Preview gambar menu -->
+                <img id="menuPreview" 
+                    src="{{ asset('storage/' . $menus->first()->foto) }}" 
+                    alt="Preview" 
+                    class="h-20 w-20 object-cover rounded border">
+            </div>
         </div>
+
 
         <div>
             <label class="block text-sm font-medium text-gray-700">Jumlah</label>
@@ -45,11 +70,14 @@
 
     <h2 class="text-xl font-semibold mb-4">Detail Order</h2>
 
+    <h2 class="text-xl font-semibold mb-4">Detail Order</h2>
+
     @if ($order->orderItems->count() > 0)
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border text-sm">
                 <thead class="bg-gray-100">
                 <tr>
+                    <th class="px-4 py-2">Foto</th>
                     <th class="px-4 py-2">Menu</th>
                     <th class="px-4 py-2 text-right">Harga Satuan</th>
                     <th class="px-4 py-2 text-center">Jumlah</th>
@@ -60,6 +88,9 @@
                 <tbody>
                 @foreach ($order->orderItems as $item)
                     <tr class="border-t">
+                        <td class="px-4 py-2">
+                            <img src="{{ asset('storage/' . $item->menu->foto) }}" alt="{{ $item->menu->nama }}" class="h-16 w-16 object-cover rounded">
+                        </td>
                         <td class="px-4 py-2">{{ $item->menu->nama }}</td>
                         <td class="px-4 py-2 text-right">Rp {{ number_format($item->menu->harga) }}</td>
                         <td class="px-4 py-2 text-center">{{ $item->quantity }}</td>
@@ -78,6 +109,7 @@
     @else
         <p class="text-gray-500">Belum ada item.</p>
     @endif
+
 
     <p class="mt-4 text-lg font-semibold">Total Harga: <span class="text-indigo-600">Rp {{ number_format($order->total_harga) }}</span></p>
 
