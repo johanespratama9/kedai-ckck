@@ -26,7 +26,7 @@ class SalesDashboard extends Page
     {
         $this->totalOrder      = Order::count();
         $this->totalPendapatan = Order::sum('total_harga');
-        $this->orderSelesai    = Order::where('status', 'completed')->count();
+        $this->orderSelesai    = Order::where('status_makanan', 'pesanan selesai')->count();
     }
 
     public function export()
