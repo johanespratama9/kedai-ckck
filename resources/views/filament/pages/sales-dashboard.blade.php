@@ -20,6 +20,20 @@
     </div>
 
     <h2 class="text-lg font-semibold mb-4">Laporan Penjualan</h2>
+
+    {{-- Filter tanggal --}}
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-2 mb-4">
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Dari Tanggal:</label>
+            <input type="date" id="minDate" class="border rounded px-2 py-1">
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Sampai Tanggal:</label>
+            <input type="date" id="maxDate" class="border rounded px-2 py-1">
+        </div>
+        <button id="resetFilter" class="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 mt-5">Reset Filter</button>
+    </div>
+
     <div class="overflow-x-auto">
         <table id="salesTable" class="min-w-full text-sm">
             <thead class="bg-gray-100">
@@ -38,7 +52,7 @@
                         <td class="px-4 py-2">{{ $order->nomor_meja }}</td>
                         <td class="px-4 py-2">Rp {{ number_format($order->total_harga) }}</td>
                         <td class="px-4 py-2">{{ $order->status }}</td>
-                        <td class="px-4 py-2">{{ $order->created_at->format('d M Y H:i') }}</td>
+                        <td class="px-4 py-2">{{ $order->created_at->format('Y-m-d') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -86,7 +100,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#salesTable').DataTable({
+            var table = $('#salesTable').DataTable({
                 dom: 'Bfrtip',
                 buttons: [
                     { extend: 'excelHtml5', title: 'Laporan Penjualan' },
@@ -100,6 +114,31 @@
                     paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" },
                     zeroRecords: "Data tidak ditemukan"
                 }
+            });
+
+            // Custom filter by date range
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var min = $('#minDate').val();
+                    var max = $('#maxDate').val();
+                    var tanggal = data[4]; // kolom tanggal
+
+                    if (min && tanggal < min) return false;
+                    if (max && tanggal > max) return false;
+                    return true;
+                }
+            );
+
+            // Otomatis filter saat ganti tanggal
+            $('#minDate, #maxDate').change(function() {
+                table.draw();
+            });
+
+            // Reset filter
+            $('#resetFilter').click(function() {
+                $('#minDate').val('');
+                $('#maxDate').val('');
+                table.draw();
             });
         });
     </script>
