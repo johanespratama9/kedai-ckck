@@ -20,6 +20,10 @@
             <span class="font-semibold">{{ $record->customer_name }}</span>
         </div>
         <div class="flex justify-between">
+            <span class="text-gray-600">Catatan:</span>
+            <span class="font-semibold">{{ $record->keterangan }}</span>
+        </div>
+        <div class="flex justify-between">
             <span class="text-gray-600">Status:</span>
             <span class="font-semibold uppercase">{{ $record->status }}</span>
         </div>
