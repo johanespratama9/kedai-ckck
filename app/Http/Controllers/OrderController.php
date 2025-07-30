@@ -33,29 +33,34 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
             'keterangan'    => 'nullable|string',
-            'menu_id'       => 'required|exists:menus,id',
-            'quantity'      => 'required|integer|min:1',
+            'selected_menu' => 'required|exists:menus,id',
+            'quantity'      => 'required|array',
+            'quantity.*'    => 'required|integer|min:1',
         ]);
 
-        $menu     = Menu::findOrFail($data['menu_id']);
-        $subtotal = $menu->harga * $data['quantity'];
+        $menuId   = $data['selected_menu'];
+        $quantity = $data['quantity'][$menuId] ?? 1;
 
-        // Update customer_name dan total_harga
+        // Cari menu
+        $menu     = Menu::findOrFail($menuId);
+        $subtotal = $menu->harga * $quantity;
+
+        // Update customer_name dan keterangan
         $order->customer_name = $data['customer_name'];
         $order->keterangan    = $data['keterangan'] ?? '';
         $order->total_harga += $subtotal;
         $order->save();
 
-        // Tambah item
+        // Tambah item ke order
         OrderItem::create([
             'order_id' => $order->id,
             'menu_id'  => $menu->id,
-            'quantity' => $data['quantity'],
+            'quantity' => $quantity,
             'subtotal' => $subtotal,
         ]);
 
         // Kurangi stok
-        $menu->stok -= $data['quantity'];
+        $menu->stok -= $quantity;
         $menu->save();
 
         return redirect()->back()->with('success', 'Item berhasil ditambahkan!');

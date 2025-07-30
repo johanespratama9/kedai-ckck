@@ -48,10 +48,11 @@
                         <p class="text-indigo-600">Rp {{ number_format($menu->harga) }}</p>
                     </div>
                     <input type="hidden" name="menu_id" value="{{ $menu->id }}">
-                    <input type="number" name="quantity" value="1" min="1"
-                           class="w-16 mb-2 rounded-md border-gray-300 shadow-sm text-center">
-                    <button type="submit" name="selected_menu" value="{{ $menu->id }}"
-                            class="bg-indigo-600 text-white text-sm px-3 py-1 rounded-md w-full">Tambah ke Keranjang</button>
+                   <input type="number" name="quantity[{{ $menu->id }}]" value="1" min="1"
+       class="w-16 mb-2 rounded-md border-gray-300 shadow-sm text-center">
+<button type="submit" name="selected_menu" value="{{ $menu->id }}"
+        class="bg-indigo-600 text-white text-sm px-3 py-1 rounded-md w-full">Tambah ke Keranjang</button>
+
                 </div>
             @endforeach
         </div>
