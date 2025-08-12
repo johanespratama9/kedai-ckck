@@ -161,19 +161,19 @@
                     </a>
                 @endif
                 @if($order->status !== 'paid')
-                    <form method="POST" action="{{ route('order.pay', $order->id) }}" class="flex-1">
-                        @csrf
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Konfirmasi Pembayaran
-                        </button>
-                    </form>
+                    <a href="{{ route('order.payment', $order->id) }}"
+                        class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Lanjut ke Pembayaran
+                    </a>
                 @endif
             </div>
         </div>
     </div>
 </div>
+</body>
+</html>
 </body>
 </html>

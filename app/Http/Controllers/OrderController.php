@@ -129,12 +129,39 @@ class OrderController extends Controller
         return view('order.invoice', compact('order'));
     }
 
-    public function pay(Order $order)
+    public function showPayment(Order $order)
     {
-        $order->status = 'paid';
-        $order->save();
+        return view('order.payment', compact('order'));
+    }
 
-        return redirect()->route('order.invoice', $order->id)->with('success', 'Pembayaran berhasil!');
+    public function processPayment(Order $order, Request $request)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
+        ]);
+
+        $paymentMethod = $request->payment_method;
+
+        return view('order.payment-process', compact('order', 'paymentMethod'));
+    }
+
+    public function confirmPayment(Order $order, Request $request)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
+        ]);
+
+        // Update order status to paid
+        $order->update([
+            'status'         => 'paid',
+            'status_makanan' => 'preparing',
+            'payment_method' => $request->payment_method,
+            'paid_at'        => now(),
+        ]);
+
+        // Redirect to invoice with success message
+        return redirect()->route('order.invoice', $order->id)
+            ->with('success', 'Pembayaran berhasil dikonfirmasi!');
     }
 
     public function downloadInvoicePdf(Order $order)
