@@ -13,6 +13,7 @@ class SalesDashboard extends Page
     protected static ?string $title           = 'Dashboard Penjualan';
     protected static ?string $navigationLabel = 'Laporan Penjualan';
     protected static ?int $navigationSort     = -1;
+    protected static string $routePath        = '/'; // Set as root path
 
     public $totalOrder;
     public $totalPendapatan;
