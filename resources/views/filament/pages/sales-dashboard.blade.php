@@ -262,14 +262,14 @@
         </div>
 
         <!-- Export Buttons -->
-        <div class="export-buttons">
+        {{-- <div class="export-buttons">
             <a href="#" class="export-btn pdf">
                 📄 Export PDF
             </a>
             <a href="#" class="export-btn excel">
                 📊 Export Excel
             </a>
-        </div>
+        </div> --}}
 
         <!-- Laporan Harian -->
         <div id="stats-harian" class="stats-period active">
@@ -372,14 +372,14 @@
             <h2 class="section-title">📋 Laporan Penjualan Detail</h2>
             
             <!-- Export Buttons untuk tabel -->
-            <div class="export-buttons">
+            {{-- <div class="export-buttons">
                 <a href="#" class="export-btn pdf" onclick="exportTableToPDF()">
                     📄 Export PDF
                 </a>
                 <a href="#" class="export-btn excel" onclick="exportTableToExcel()">
                     📊 Export Excel
                 </a>
-            </div>
+            </div> --}}
 
             <!-- Filter tanggal -->
             <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200">
