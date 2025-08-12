@@ -108,7 +108,7 @@
                     </div>
 
                     <!-- E-Wallet -->
-                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-300 transition-colors">
+                    {{-- <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-300 transition-colors">
                         <label class="flex items-center cursor-pointer">
                             <input type="radio" name="payment_method" value="ewallet" class="mr-4 text-brand-600" required>
                             <div class="flex items-center space-x-4">
@@ -123,7 +123,7 @@
                                 </div>
                             </div>
                         </label>
-                    </div>
+                    </div> --}}
 
                     <!-- Submit Button -->
                     <div class="pt-6">
