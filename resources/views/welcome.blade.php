@@ -229,7 +229,7 @@
         @endif
 
         <!-- Add this link somewhere in your welcome page or navigation -->
-        <div class="text-center mt-6">
+        {{-- <div class="text-center mt-6">
             <a href="{{ route('order.historyForm') }}" 
                class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +237,7 @@
                 </svg>
                 Cek Histori Pesanan
             </a>
-        </div>
+        </div> --}}
     </body>
 </html>
                             <path d="M464.198 304.708L435.375 254.789L377.307 355.366L406.13 405.285L464.198 304.708Z" stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
