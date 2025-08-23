@@ -27,3 +27,7 @@ Route::post('/order/{order}/confirm-payment', [OrderController::class, 'confirmP
 Route::get('/sales/export', function () {
     return Excel::download(new OrdersExport, 'orders.xlsx');
 })->name('sales.export');
+
+// Order history routes
+Route::get('/order-history', [OrderController::class, 'showHistoryForm'])->name('order.historyForm');
+Route::post('/order-history', [OrderController::class, 'searchHistory'])->name('order.searchHistory');

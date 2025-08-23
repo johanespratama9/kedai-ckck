@@ -174,4 +174,26 @@ class OrderController extends Controller
         return $pdf->download('invoice_order_' . $order->id . '.pdf');
     }
 
+    public function showHistoryForm()
+    {
+        return view('order.history-form');
+    }
+
+    public function searchHistory(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $phone = $request->phone;
+
+        // Search orders by phone number
+        $orders = Order::with(['orderItems.menu'])
+            ->where('phone', $phone)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('order.history-results', compact('orders', 'phone'));
+    }
+
 }
