@@ -30,6 +30,10 @@ class OrderResource extends Resource
                     ->label('Nama Konsumen')
                     ->required(),
 
+                Forms\Components\TextInput::make('phone')
+                    ->label('No. HP')
+                    ->required(),
+
                 Forms\Components\TextInput::make('nomor_meja')
                     ->label('Nomor Meja')
                     ->required(),
@@ -50,6 +54,10 @@ class OrderResource extends Resource
 
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Nama Konsumen')
+                    ->searchable(), // ✅ tambahkan searchable
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('No. HP')
                     ->searchable(), // ✅ tambahkan searchable
 
                 Tables\Columns\TextColumn::make('nomor_meja')

@@ -57,10 +57,16 @@
         <!-- Customer Info Card -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-200">
             <h2 class="text-xl font-bold text-slate-900 mb-6">Informasi Pelanggan</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Customer</label>
                     <input type="text" name="customer_name" value="{{ old('customer_name', $order->customer_name) }}" required
+                           class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">No. HP</label>
+                    <input type="text" name="phone" value="{{ old('phone', $order->phone) }}" required
+                           placeholder="Contoh: 081234567890"
                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
                 </div>
                 <div>

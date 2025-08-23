@@ -61,6 +61,10 @@
                                 <span class="text-slate-600">Nama Konsumen</span>
                                 <span class="font-semibold text-slate-900">{{ $order->customer_name }}</span>
                             </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">No. HP</span>
+                                <span class="font-semibold text-slate-900">{{ $order->phone }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -173,7 +177,5 @@
         </div>
     </div>
 </div>
-</body>
-</html>
 </body>
 </html>

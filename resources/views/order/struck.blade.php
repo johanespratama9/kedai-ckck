@@ -24,6 +24,7 @@
     <div class="info">
         <p><strong>Meja:</strong> {{ $order->nomor_meja }}</p>
         <p><strong>Nama Konsumen:</strong> {{ $order->customer_name }}</p>
+        <p><strong>No. HP:</strong> {{ $order->phone }}</p>
         <p><strong>Status:</strong> {{ strtoupper($order->status) }}</p>
         <p><strong>Catatan:</strong> {{ strtoupper($order->keterangan) }}</p>
         <p><strong>Tanggal Cetak:</strong> {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}</p>

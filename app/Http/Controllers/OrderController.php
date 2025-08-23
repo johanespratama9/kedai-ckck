@@ -32,6 +32,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
+            'phone'         => 'required|string|max:20',
             'keterangan'    => 'nullable|string',
             'selected_menu' => 'required|exists:menus,id',
             'quantity'      => 'required|array',
@@ -45,8 +46,9 @@ class OrderController extends Controller
         $menu     = Menu::findOrFail($menuId);
         $subtotal = $menu->harga * $quantity;
 
-        // Update customer_name dan keterangan
+        // Update customer_name, phone dan keterangan
         $order->customer_name = $data['customer_name'];
+        $order->phone         = $data['phone'];
         $order->keterangan    = $data['keterangan'] ?? '';
         $order->total_harga += $subtotal;
         $order->save();

@@ -156,6 +156,10 @@
                         <span class="text-slate-600">Customer:</span>
                         <span class="font-semibold">{{ $order->customer_name }}</span>
                     </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-600">No. HP:</span>
+                        <span class="font-semibold">{{ $order->phone }}</span>
+                    </div>
                 </div>
 
                 <div class="border-t border-slate-200 pt-4 mb-4">
