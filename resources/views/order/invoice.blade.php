@@ -46,6 +46,17 @@
         </div>
 
         <!-- Content -->
+        @php
+            $items = $order->orderItems;
+
+            if (! $items instanceof \Illuminate\Support\Collection) {
+                $items = collect($items ?? []);
+            }
+
+            if ($items instanceof \Illuminate\Database\Eloquent\Collection) {
+                $items->loadMissing('menu');
+            }
+        @endphp
         <div class="p-6 space-y-6">
             <!-- Order Info Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,11 +125,11 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
-                            @if($order->orderItems && $order->orderItems->count())
-                                @foreach($order->orderItems as $item)
+                            @if($items->isNotEmpty())
+                                @foreach($items as $item)
                                     <tr class="hover:bg-slate-25">
                                         <td class="py-4 px-6">
-                                            <div class="font-medium text-slate-900">{{ $item->menu->nama }}</div>
+                                            <div class="font-medium text-slate-900">{{ optional($item->menu)->nama ?? '-' }}</div>
                                         </td>
                                         <td class="py-4 px-6 text-center">
                                             <span class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full font-semibold">{{ $item->quantity }}</span>

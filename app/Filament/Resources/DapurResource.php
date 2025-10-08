@@ -18,14 +18,6 @@ class DapurResource extends Resource
     protected static ?string $pluralLabel     = 'Pesanan Dapur';
     protected static ?string $navigationGroup = 'Operasional';
 
-    public function getInfolistComponents(): array
-    {
-        return [
-            ViewEntry::make('invoice')
-                ->view('filament.resources.dapur-resource.invoice'),
-        ];
-    }
-
     public static function form(Form $form): Form
     {
         return $form
@@ -93,9 +85,8 @@ class DapurResource extends Resource
                 Tables\Actions\Action::make('lihat_invoice')
                     ->label('Lihat Invoice')
                     ->icon('heroicon-o-document-text')
-                    ->modalHeading(fn($record) => 'Invoice Order #' . $record->id)
-                    ->modalContent(fn($record) => view('components.invoice', ['record' => $record]))
-                    ->modalSubmitAction(false)
+                    ->url(fn(Order $record) => route('order.invoice', $record))
+                    ->openUrlInNewTab()
                     ->color('primary'),
             ])
             // Hilangkan DeleteBulkAction
@@ -107,7 +98,8 @@ class DapurResource extends Resource
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', 'paid');
+            ->where('status', 'paid')
+            ->with(['orderItems.menu']);
     }
 
     public static function getPages(): array

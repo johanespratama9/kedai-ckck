@@ -18,6 +18,18 @@
         </div>
     </div>
 
+    @php
+        $items = $record->orderItems;
+
+        if (! $items instanceof \Illuminate\Support\Collection) {
+            $items = collect($items ?? []);
+        }
+
+        if ($items instanceof \Illuminate\Database\Eloquent\Collection) {
+            $items->loadMissing('menu');
+        }
+    @endphp
+
     <div class="p-6 space-y-4">
         <!-- Info Grid -->
         <div class="grid grid-cols-2 gap-4 text-sm">
@@ -58,10 +70,10 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @if($record->orderItems && $record->orderItems->count())
-                        @foreach($record->orderItems as $item)
+                    @if($items->isNotEmpty())
+                        @foreach($items as $item)
                             <tr>
-                                <td class="py-2 px-3 font-medium text-slate-900">{{ $item->menu->nama }}</td>
+                                <td class="py-2 px-3 font-medium text-slate-900">{{ optional($item->menu)->nama ?? '-' }}</td>
                                 <td class="py-2 px-3 text-center">
                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-semibold text-xs">{{ $item->quantity }}</span>
                                 </td>
