@@ -75,9 +75,17 @@
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">No. HP</label>
-                    <input type="text" name="phone" value="{{ old('phone', $order->phone) }}" required
+                    <input type="tel" name="phone" value="{{ old('phone', $order->phone) }}" required
                            placeholder="Contoh: 081234567890"
-                           class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                           pattern="[0-9]+"
+                           inputmode="numeric"
+                           maxlength="15"
+                           class="w-full px-4 py-3 border @error('phone') border-red-500 @else border-slate-300 @enderror rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                    @error('phone')
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @else
+                        <p class="text-slate-500 text-xs mt-1">Hanya angka (0-9), minimal 10 angka</p>
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan</label>
@@ -88,38 +96,133 @@
             </div>
         </div>
 
-        <!-- Menu Selection Card -->
+        <!-- Menu Selection Card with Tabs -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-200">
             <h2 class="text-xl font-bold text-slate-900 mb-6">Pilih Menu</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach($menus as $menu)
-                    <div class="group bg-slate-50 rounded-2xl p-4 border border-slate-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                        <div class="aspect-square mb-4 overflow-hidden rounded-xl bg-white shadow-sm">
-                            <img src="{{ asset('storage/' . $menu->foto) }}" alt="{{ $menu->nama }}"
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="text-center space-y-3">
-                            <h3 class="font-bold text-slate-900 text-lg">{{ $menu->nama }}</h3>
-                            <p class="text-brand-600 font-bold text-xl">Rp {{ number_format($menu->harga) }}</p>
-                            
-                            <div class="flex items-center justify-center space-x-2">
-                                <label class="text-sm font-medium text-slate-600">Qty:</label>
-                                <input type="number" name="quantity[{{ $menu->id }}]" value="1" min="1"
-                                       class="w-20 px-3 py-2 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+            
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3">
+                <button class="menu-tab-btn active px-6 py-2 font-semibold text-brand-600 border-b-2 border-brand-600 transition-colors" data-category="makanan">
+                    🍔 Makanan
+                </button>
+                <button class="menu-tab-btn px-6 py-2 font-semibold text-slate-600 border-b-2 border-transparent hover:text-slate-900 transition-colors" data-category="minuman">
+                    🥤 Minuman
+                </button>
+            </div>
+
+            <!-- Makanan Tab -->
+            <div id="makanan-tab" class="menu-tab-content">
+                @php
+                    $makananList = $menus->where('kategori', 'makanan');
+                @endphp
+                @if($makananList->count() > 0)
+                    <p class="text-slate-600 text-sm mb-4">Pilih menu makanan favorit Anda</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        @foreach($makananList as $menu)
+                            <div class="group bg-slate-50 rounded-2xl p-3 border border-slate-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                                <div class="aspect-square mb-3 overflow-hidden rounded-xl bg-white shadow-sm">
+                                    <img src="{{ asset('storage/' . $menu->foto) }}" alt="{{ $menu->nama }}"
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                </div>
+                                <div class="text-center space-y-2">
+                                    <h3 class="font-bold text-slate-900 text-sm">{{ $menu->nama }}</h3>
+                                    @if($menu->keterangan)
+                                        <p class="text-slate-500 text-xs">{{ $menu->keterangan }}</p>
+                                    @endif
+                                    <p class="text-brand-600 font-bold text-sm">Rp {{ number_format($menu->harga) }}</p>
+                                    
+                                    <div class="flex items-center justify-center space-x-1">
+                                        <label class="text-xs font-medium text-slate-600">Qty:</label>
+                                        <input type="number" name="quantity[{{ $menu->id }}]" value="1" min="1"
+                                               class="w-16 px-2 py-1 text-sm border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                                    </div>
+                                    
+                                    <button type="submit" name="selected_menu" value="{{ $menu->id }}"
+                                            class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Tambah
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <button type="submit" name="selected_menu" value="{{ $menu->id }}"
-                                    class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Tambah ke Keranjang
-                            </button>
-                        </div>
+                        @endforeach
                     </div>
-                @endforeach
+                @else
+                    <p class="text-slate-500 text-center py-8">Tidak ada menu makanan tersedia</p>
+                @endif
+            </div>
+
+            <!-- Minuman Tab -->
+            <div id="minuman-tab" class="menu-tab-content hidden">
+                @php
+                    $minumanList = $menus->where('kategori', 'minuman');
+                @endphp
+                @if($minumanList->count() > 0)
+                    <p class="text-slate-600 text-sm mb-4">Pilih menu minuman favorit Anda</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        @foreach($minumanList as $menu)
+                            <div class="group bg-slate-50 rounded-2xl p-3 border border-slate-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                                <div class="aspect-square mb-3 overflow-hidden rounded-xl bg-white shadow-sm">
+                                    <img src="{{ asset('storage/' . $menu->foto) }}" alt="{{ $menu->nama }}"
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                </div>
+                                <div class="text-center space-y-2">
+                                    <h3 class="font-bold text-slate-900 text-sm">{{ $menu->nama }}</h3>
+                                    @if($menu->keterangan)
+                                        <p class="text-slate-500 text-xs">{{ $menu->keterangan }}</p>
+                                    @endif
+                                    <p class="text-brand-600 font-bold text-sm">Rp {{ number_format($menu->harga) }}</p>
+                                    
+                                    <div class="flex items-center justify-center space-x-1">
+                                        <label class="text-xs font-medium text-slate-600">Qty:</label>
+                                        <input type="number" name="quantity[{{ $menu->id }}]" value="1" min="1"
+                                               class="w-16 px-2 py-1 text-sm border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                                    </div>
+                                    
+                                    <button type="submit" name="selected_menu" value="{{ $menu->id }}"
+                                            class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-slate-500 text-center py-8">Tidak ada menu minuman tersedia</p>
+                @endif
             </div>
         </div>
+
+        <script>
+            // Tab switching functionality
+            document.querySelectorAll('.menu-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    
+                    // Hide all tabs
+                    document.querySelectorAll('.menu-tab-content').forEach(tab => {
+                        tab.classList.add('hidden');
+                    });
+                    
+                    // Deactivate all buttons
+                    document.querySelectorAll('.menu-tab-btn').forEach(b => {
+                        b.classList.remove('active', 'border-brand-600', 'text-brand-600');
+                        b.classList.add('border-transparent', 'text-slate-600');
+                    });
+                    
+                    // Show selected tab
+                    document.getElementById(category + '-tab').classList.remove('hidden');
+                    
+                    // Activate selected button
+                    this.classList.remove('border-transparent', 'text-slate-600');
+                    this.classList.add('active', 'border-brand-600', 'text-brand-600');
+                });
+            });
+        </script>
     </form>
 
     <!-- Cart Section -->
@@ -208,6 +311,98 @@
         @endif
     </div>
 </div>
+
+<!-- Notification Container -->
+<div id="notificationContainer" class="fixed bottom-4 right-4 space-y-3 z-50"></div>
+
+<script>
+// Polling untuk status order setiap 5 detik setelah order di-submit
+let pollingInterval;
+
+function checkOrderStatus() {
+    const orderId = {{ $order->id }};
+    
+    fetch(`/api/order/${orderId}/status`)
+        .then(response => response.json())
+        .then(data => {
+            // Jika status_makanan ada, tampilkan notifikasi
+            if (data.status_makanan === 'pesanan sedang diproses') {
+                showNotification('⏳ Pesanan sedang diproses di dapur', 'warning');
+            } else if (data.status_makanan === 'pesanan selesai') {
+                showNotification('✅ Pesanan Anda sudah siap! Silakan ambil di meja', 'success');
+                // Hentikan polling jika sudah selesai
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+            } else if (data.status_makanan === 'pesanan diterima') {
+                showNotification('📝 Pesanan Anda diterima oleh dapur', 'info');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    
+    // Cek apakah notification dengan pesan yang sama sudah ada
+    const existing = Array.from(container.children).find(el => el.textContent.includes(message.substring(0, 10)));
+    if (existing) return; // Jangan duplicate
+    
+    const bgColor = {
+        'success': 'bg-green-500',
+        'warning': 'bg-yellow-500',
+        'info': 'bg-blue-500',
+        'error': 'bg-red-500'
+    }[type] || 'bg-blue-500';
+    
+    const notification = document.createElement('div');
+    notification.className = `${bgColor} text-white px-6 py-4 rounded-xl shadow-lg animate-fade-in`;
+    notification.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove setelah 5 detik
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Tambahkan CSS untuk animation
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
+
+// Mulai polling setelah 2 detik (tunggu halaman fully loaded)
+setTimeout(() => {
+    // Check status setiap 5 detik
+    pollingInterval = setInterval(checkOrderStatus, 5000);
+    // Juga check sekali saat page load
+    checkOrderStatus();
+}, 2000);
+</script>
 
 </body>
 </html>

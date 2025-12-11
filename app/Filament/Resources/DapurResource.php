@@ -62,7 +62,8 @@ class DapurResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status'),
+                    ->label('Status')
+                    ->visible(false),
 
                 Tables\Columns\BadgeColumn::make('status_makanan')
                     ->label('Status Makanan')
@@ -81,7 +82,7 @@ class DapurResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn(Order $record) => $record->status === 'paid'),
+                    ->visible(fn(Order $record) => $record->status === 'submitted'),
                 Tables\Actions\Action::make('lihat_invoice')
                     ->label('Lihat Invoice')
                     ->icon('heroicon-o-document-text')
@@ -98,7 +99,8 @@ class DapurResource extends Resource
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', 'paid')
+            ->where('status', '!=', 'pending')
+            ->where('status', '!=', 'canceled')
             ->with(['orderItems.menu']);
     }
 

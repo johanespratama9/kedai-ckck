@@ -16,6 +16,11 @@ class Order extends Model
         'status',
         'status_makanan',
         'keterangan',
+        'started_at',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
     ];
 
     public function orderItems()

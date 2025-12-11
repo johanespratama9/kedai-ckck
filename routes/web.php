@@ -31,3 +31,6 @@ Route::get('/sales/export', function () {
 // Order history routes
 Route::get('/order-history', [OrderController::class, 'showHistoryForm'])->name('order.historyForm');
 Route::post('/order-history', [OrderController::class, 'searchHistory'])->name('order.searchHistory');
+
+// API routes untuk notifikasi
+Route::get('/api/order/{order}/status', [OrderController::class, 'getOrderStatus'])->name('api.order.status');

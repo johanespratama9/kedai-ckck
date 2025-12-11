@@ -20,7 +20,7 @@ class OrderController extends Controller
         // Ambil order pending + orderItems
         $order = Order::with('orderItems.menu')->firstOrCreate(
             ['nomor_meja' => $nomorMeja, 'status' => 'pending'],
-            ['total_harga' => 0]
+            ['total_harga' => 0, 'started_at' => now()]
         );
 
         $menus = Menu::where('status', true)->get();
@@ -32,11 +32,16 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
-            'phone'         => 'required|string|max:20',
+            'phone'         => 'required|regex:/^[0-9]+$/|min:10|max:15',
             'keterangan'    => 'nullable|string',
             'selected_menu' => 'required|exists:menus,id',
             'quantity'      => 'required|array',
             'quantity.*'    => 'required|integer|min:1',
+        ], [
+            'phone.regex'    => 'No. HP hanya boleh berisi angka (0-9)',
+            'phone.min'      => 'No. HP minimal 10 angka',
+            'phone.max'      => 'No. HP maksimal 15 angka',
+            'phone.required' => 'No. HP tidak boleh kosong',
         ]);
 
         $menuId   = $data['selected_menu'];
@@ -182,7 +187,12 @@ class OrderController extends Controller
     public function searchHistory(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|regex:/^[0-9]+$/|min:10|max:15',
+        ], [
+            'phone.regex'    => 'No. HP hanya boleh berisi angka (0-9)',
+            'phone.min'      => 'No. HP minimal 10 angka',
+            'phone.max'      => 'No. HP maksimal 15 angka',
+            'phone.required' => 'No. HP tidak boleh kosong',
         ]);
 
         $phone = $request->phone;
@@ -194,6 +204,18 @@ class OrderController extends Controller
             ->get();
 
         return view('order.history-results', compact('orders', 'phone'));
+    }
+
+    // API endpoint untuk polling status order
+    public function getOrderStatus(Order $order)
+    {
+        return response()->json([
+            'id'             => $order->id,
+            'status'         => $order->status,
+            'status_makanan' => $order->status_makanan,
+            'customer_name'  => $order->customer_name,
+            'nomor_meja'     => $order->nomor_meja,
+        ]);
     }
 
 }

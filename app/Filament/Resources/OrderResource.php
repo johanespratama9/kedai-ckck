@@ -70,9 +70,17 @@ class OrderResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status Pembayaran')
                     ->colors([
-                        'primary' => 'Submited',
-                        'success' => 'paid',
-                    ]),
+                        'primary' => 'submitted',
+                        'danger'  => 'canceled',
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'submitted' => 'Submitted',
+                        'pending'   => 'Pending',
+                        'canceled'  => 'Canceled',
+                        'paid'      => null, // Hide paid status
+                        default     => $state
+                    })
+                    ->visible(fn($record) => $record->status !== 'paid' && $record->status !== 'pending'),
                 // Tables\Columns\BadgeColumn::make('status_makanan')
                 //     ->label('Status Makanan')
                 //     ->colors([

@@ -44,11 +44,16 @@
                 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-3">Nomor HP</label>
-                    <input type="text" name="phone" value="{{ old('phone') }}" required
+                    <input type="tel" name="phone" value="{{ old('phone') }}" required
                            placeholder="Contoh: 081234567890"
-                           class="w-full px-4 py-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors text-lg">
+                           pattern="[0-9]+"
+                           inputmode="numeric"
+                           maxlength="15"
+                           class="w-full px-4 py-4 border @error('phone') border-red-500 @else border-slate-300 @enderror rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors text-lg">
                     @error('phone')
                         <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @else
+                        <p class="text-slate-500 text-xs mt-1">Hanya angka (0-9), minimal 10 angka</p>
                     @enderror
                 </div>
 
