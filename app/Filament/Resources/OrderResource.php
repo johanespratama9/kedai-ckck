@@ -80,7 +80,7 @@ class OrderResource extends Resource
                         'paid'      => null, // Hide paid status
                         default     => $state
                     })
-                    ->visible(fn($record) => $record->status !== 'paid' && $record->status !== 'pending'),
+                    ->visible(fn($record) => $record && $record->status && $record->status !== 'paid' && $record->status !== 'pending'),
                 // Tables\Columns\BadgeColumn::make('status_makanan')
                 //     ->label('Status Makanan')
                 //     ->colors([

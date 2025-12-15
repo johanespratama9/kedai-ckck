@@ -75,17 +75,31 @@
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">No. HP</label>
-                    <input type="tel" name="phone" value="{{ old('phone', $order->phone) }}" required
+                    <input type="tel" 
+                           id="phoneInput"
+                           name="phone" 
+                           value="{{ old('phone', $order->phone) }}" 
+                           required
                            placeholder="Contoh: 081234567890"
                            pattern="[0-9]+"
                            inputmode="numeric"
                            maxlength="15"
                            class="w-full px-4 py-3 border @error('phone') border-red-500 @else border-slate-300 @enderror rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
-                    @error('phone')
-                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
-                    @else
+                    <div id="phoneError" class="hidden flex items-center mt-2 text-red-500 text-sm">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Hanya angka (0-9) yang diizinkan</span>
+                    </div>
+                    <div id="phoneSuccess" class="hidden flex items-center mt-2 text-green-600 text-sm">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Nomor HP valid</span>
+                    </div>
+                    @if (!$errors->has('phone'))
                         <p class="text-slate-500 text-xs mt-1">Hanya angka (0-9), minimal 10 angka</p>
-                    @enderror
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan</label>
@@ -198,6 +212,93 @@
         </div>
 
         <script>
+            // Validasi No. HP Real-time
+            const phoneInput = document.getElementById('phoneInput');
+            const phoneError = document.getElementById('phoneError');
+            const phoneSuccess = document.getElementById('phoneSuccess');
+
+            function validatePhone() {
+                const submitButtons = document.querySelectorAll('button[type="submit"]');
+                const value = phoneInput.value;
+                
+                if (value === '') {
+                    // Jika kosong, sembunyikan error dan success
+                    phoneError.classList.add('hidden');
+                    phoneSuccess.classList.add('hidden');
+                    submitButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    });
+                    return true;
+                } else {
+                    // Ada nilai dan hanya angka, enable button
+                    phoneError.classList.add('hidden');
+                    phoneSuccess.classList.remove('hidden');
+                    phoneInput.classList.add('border-green-500');
+                    phoneInput.classList.remove('border-red-500', 'border-slate-300');
+                    
+                    // Enable semua tombol submit
+                    submitButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btn.title = '';
+                    });
+                    return true;
+                }
+            }
+
+            // Hapus karakter non-angka secara otomatis (real-time)
+            phoneInput.addEventListener('input', function(e) {
+                // Hapus semua karakter yang bukan angka
+                let originalValue = this.value;
+                this.value = this.value.replace(/[^\d]/g, '');
+                
+                // Jika ada karakter yang dihapus, tampilkan warning
+                if (originalValue !== this.value && originalValue.length > this.value.length) {
+                    showNotification('⚠️ Hanya angka yang diizinkan. Karakter lain dihapus otomatis.', 'warning');
+                }
+                
+                validatePhone();
+            });
+
+            // Prevent dari mengetik karakter non-angka
+            phoneInput.addEventListener('keypress', function(e) {
+                // Hanya izinkan angka (0-9)
+                if (!/[\d]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Prevent paste karakter non-angka
+            phoneInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                const cleanedData = pasteData.replace(/[^\d]/g, '');
+                
+                if (cleanedData.length > 0) {
+                    this.value = cleanedData;
+                    validatePhone();
+                }
+                
+                if (pasteData !== cleanedData) {
+                    showNotification('✂️ Hanya angka yang di-paste. Karakter lain otomatis dihapus.', 'warning');
+                }
+            });
+
+            // Prevent drag and drop file
+            phoneInput.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+
+            phoneInput.addEventListener('drop', function(e) {
+                e.preventDefault();
+            });
+
+            // Validasi saat form di-load jika ada nilai sebelumnya
+            if (phoneInput.value) {
+                validatePhone();
+            }
+
             // Tab switching functionality
             document.querySelectorAll('.menu-tab-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -316,31 +417,6 @@
 <div id="notificationContainer" class="fixed bottom-4 right-4 space-y-3 z-50"></div>
 
 <script>
-// Polling untuk status order setiap 5 detik setelah order di-submit
-let pollingInterval;
-
-function checkOrderStatus() {
-    const orderId = {{ $order->id }};
-    
-    fetch(`/api/order/${orderId}/status`)
-        .then(response => response.json())
-        .then(data => {
-            // Jika status_makanan ada, tampilkan notifikasi
-            if (data.status_makanan === 'pesanan sedang diproses') {
-                showNotification('⏳ Pesanan sedang diproses di dapur', 'warning');
-            } else if (data.status_makanan === 'pesanan selesai') {
-                showNotification('✅ Pesanan Anda sudah siap! Silakan ambil di meja', 'success');
-                // Hentikan polling jika sudah selesai
-                if (pollingInterval) {
-                    clearInterval(pollingInterval);
-                }
-            } else if (data.status_makanan === 'pesanan diterima') {
-                showNotification('📝 Pesanan Anda diterima oleh dapur', 'info');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
 function showNotification(message, type = 'info') {
     const container = document.getElementById('notificationContainer');
     
@@ -374,6 +450,31 @@ function showNotification(message, type = 'info') {
     setTimeout(() => {
         notification.remove();
     }, 5000);
+}
+
+// Polling untuk status order setiap 5 detik setelah order di-submit
+let pollingInterval;
+
+function checkOrderStatus() {
+    const orderId = {{ $order->id }};
+    
+    fetch(`/api/order/${orderId}/status`)
+        .then(response => response.json())
+        .then(data => {
+            // Jika status_makanan ada, tampilkan notifikasi
+            if (data.status_makanan === 'pesanan sedang diproses') {
+                showNotification('⏳ Pesanan sedang diproses di dapur', 'warning');
+            } else if (data.status_makanan === 'pesanan selesai') {
+                showNotification('✅ Pesanan Anda sudah siap! Silakan ambil di meja', 'success');
+                // Hentikan polling jika sudah selesai
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+            } else if (data.status_makanan === 'pesanan diterima') {
+                showNotification('📝 Pesanan Anda diterima oleh dapur', 'info');
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 // Tambahkan CSS untuk animation
