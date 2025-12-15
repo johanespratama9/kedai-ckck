@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MenuResource\Pages;
 use App\Models\Menu;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -31,7 +32,13 @@ class MenuResource extends Resource
             ->schema([
                 FileUpload::make('foto')->directory('menus'),
                 TextInput::make('nama')->required(),
-                TextInput::make('kategori')->required(),
+                Select::make('kategori')
+                    ->label('Kategori')
+                    ->options([
+                        'makanan' => '🍔 Makanan',
+                        'minuman' => '🥤 Minuman',
+                    ])
+                    ->required(),
                 TextInput::make('harga')->numeric()->required(),
                 TextInput::make('stok')->numeric()->required(),
                 Textarea::make('keterangan'),
