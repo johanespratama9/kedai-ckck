@@ -15,4 +15,8 @@ class Menu extends Model
         'status',
         'foto',
     ];
+
+    protected $attributes = [
+        'status' => true,
+    ];
 }

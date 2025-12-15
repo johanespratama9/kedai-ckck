@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Resources\MenuResource\Pages;
 
 use App\Filament\Resources\MenuResource;
@@ -15,5 +14,12 @@ class EditMenu extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Pastikan status selalu true (aktif) untuk menu yang sedang diedit
+        $data['status'] = true;
+        return $data;
     }
 }
