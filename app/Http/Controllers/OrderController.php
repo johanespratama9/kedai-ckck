@@ -154,21 +154,42 @@ class OrderController extends Controller
 
     public function confirmPayment(Order $order, Request $request)
     {
-        $request->validate([
-            'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
-        ]);
+        $paymentMethod = $request->payment_method;
+
+        // Validasi berdasarkan metode pembayaran
+        if (in_array($paymentMethod, ['qris', 'bank_transfer'])) {
+            $request->validate([
+                'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
+                'bukti_transfer' => 'required|image|max:5120', // max 5MB
+            ], [
+                'bukti_transfer.required' => 'Bukti pembayaran wajib diupload',
+                'bukti_transfer.image'    => 'File harus berupa gambar (JPG, PNG, dll)',
+                'bukti_transfer.max'      => 'Ukuran file maksimal 5MB',
+            ]);
+        } else {
+            $request->validate([
+                'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
+            ]);
+        }
+
+        // Upload bukti transfer jika ada
+        $buktiPath = null;
+        if ($request->hasFile('bukti_transfer')) {
+            $buktiPath = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
+        }
 
         // Update order status to paid
         $order->update([
             'status'         => 'paid',
-            'status_makanan' => 'preparing',
+            'status_makanan' => 'diproses',
             'payment_method' => $request->payment_method,
+            'bukti_transfer' => $buktiPath,
             'paid_at'        => now(),
         ]);
 
         // Redirect to invoice with success message
         return redirect()->route('order.invoice', $order->id)
-            ->with('success', 'Pembayaran berhasil dikonfirmasi!');
+            ->with('success', 'Pembayaran berhasil dikonfirmasi! Pesanan sedang diproses.');
     }
 
     public function downloadInvoicePdf(Order $order)

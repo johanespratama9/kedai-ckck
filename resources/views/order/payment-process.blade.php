@@ -199,14 +199,48 @@
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">3</span>Masukkan nomor rekening (klik untuk salin)</li>
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">4</span>Masukkan nominal: <strong>Rp{{ number_format($order->total_harga,0,',','.') }}</strong></li>
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">5</span>Tulis keterangan: <strong>Order #{{ $order->id }}</strong></li>
+                            <li class="flex items-start"><span class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">6</span><strong class="text-red-600">Screenshot bukti transfer & upload di bawah</strong></li>
                         </ol>
                     </div>
 
-                    <form method="POST" action="{{ route('order.confirmPayment', $order->id) }}" class="text-center">
+                    <form method="POST" action="{{ route('order.confirmPayment', $order->id) }}" enctype="multipart/form-data" class="text-center" id="bankForm">
                         @csrf
                         <input type="hidden" name="payment_method" value="bank_transfer">
-                        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                            ✅ Konfirmasi Transfer Selesai
+                        
+                        <!-- Upload Bukti Transfer -->
+                        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-2xl mb-6 border-2 border-dashed border-red-300">
+                            <h3 class="font-bold text-gray-800 mb-4 flex items-center justify-center">
+                                <span class="text-2xl mr-2">📸</span>
+                                Upload Bukti Transfer <span class="text-red-500 ml-1">*</span>
+                            </h3>
+                            <input type="file" 
+                                   name="bukti_transfer" 
+                                   id="bukti_bank"
+                                   accept="image/*" 
+                                   capture="environment"
+                                   class="block w-full text-sm text-slate-500
+                                          file:mr-4 file:py-3 file:px-6
+                                          file:rounded-xl file:border-0
+                                          file:text-sm file:font-semibold
+                                          file:bg-blue-100 file:text-blue-700
+                                          hover:file:bg-blue-200
+                                          cursor-pointer"
+                                   required
+                                   onchange="previewImage(this, 'preview_bank'); checkBankForm();">
+                            <p class="text-xs text-gray-500 mt-2">* Screenshot/foto bukti transfer wajib diupload</p>
+                            
+                            <!-- Preview -->
+                            <div id="preview_bank_container" class="hidden mt-4">
+                                <p class="text-sm text-gray-600 mb-2">Preview:</p>
+                                <img id="preview_bank" src="" alt="Preview" class="max-w-full h-48 object-contain rounded-lg border border-gray-200 mx-auto">
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                                id="btnBank"
+                                disabled
+                                class="bg-gray-300 text-gray-500 cursor-not-allowed px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg">
+                            ⚠️ Upload Bukti Transfer Dulu
                         </button>
                     </form>
                 </div>
@@ -272,14 +306,21 @@
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
-                        <!-- QR Code placeholder -->
-                        <div class="w-full h-64 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <div class="text-center">
-                                <svg class="w-16 h-16 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
-                                </svg>
-                                <p class="text-sm text-slate-500">QR Code QRIS</p>
-                            </div>
+                        <!-- QR Code - Ganti dengan gambar QRIS asli -->
+                        <div class="flex items-center justify-center mx-auto mb-4">
+                            @if(file_exists(public_path('storage/qris.png')))
+                                <img src="{{ asset('storage/qris.png') }}" alt="QRIS Kedai CKCK" class="max-w-xs w-full rounded-lg">
+                            @else
+                                <div class="w-64 h-64 bg-slate-100 rounded-lg flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg class="w-16 h-16 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                                        </svg>
+                                        <p class="text-sm text-slate-500">QR Code QRIS</p>
+                                        <p class="text-xs text-red-500 mt-1">Upload file qris.png ke storage</p>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                         <p class="text-center text-gray-700 font-semibold text-lg">Rp{{ number_format($order->total_harga,0,',','.') }}</p>
                     </div>
@@ -290,15 +331,48 @@
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">1</span>Buka aplikasi e-wallet atau mobile banking</li>
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">2</span>Scan QR Code di atas</li>
                             <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">3</span>Konfirmasi pembayaran sebesar Rp{{ number_format($order->total_harga,0,',','.') }}</li>
-                            <li class="flex items-start"><span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">4</span>Kembali ke halaman ini dan klik tombol "Sudah Bayar"</li>
+                            <li class="flex items-start"><span class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">4</span><strong class="text-red-600">Screenshot bukti bayar & upload di bawah</strong></li>
                         </ol>
                     </div>
 
-                    <form method="POST" action="{{ route('order.confirmPayment', $order->id) }}">
+                    <form method="POST" action="{{ route('order.confirmPayment', $order->id) }}" enctype="multipart/form-data" id="qrisForm">
                         @csrf
                         <input type="hidden" name="payment_method" value="qris">
-                        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                            ✅ Sudah Bayar via QRIS
+                        
+                        <!-- Upload Bukti QRIS -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl mb-6 border-2 border-dashed border-blue-300">
+                            <h3 class="font-bold text-gray-800 mb-4 flex items-center justify-center">
+                                <span class="text-2xl mr-2">📸</span>
+                                Upload Bukti Pembayaran QRIS <span class="text-red-500 ml-1">*</span>
+                            </h3>
+                            <input type="file" 
+                                   name="bukti_transfer" 
+                                   id="bukti_qris"
+                                   accept="image/*" 
+                                   capture="environment"
+                                   class="block w-full text-sm text-slate-500
+                                          file:mr-4 file:py-3 file:px-6
+                                          file:rounded-xl file:border-0
+                                          file:text-sm file:font-semibold
+                                          file:bg-blue-100 file:text-blue-700
+                                          hover:file:bg-blue-200
+                                          cursor-pointer"
+                                   required
+                                   onchange="previewImage(this, 'preview_qris'); checkQrisForm();">
+                            <p class="text-xs text-gray-500 mt-2">* Screenshot/foto bukti pembayaran wajib diupload</p>
+                            
+                            <!-- Preview -->
+                            <div id="preview_qris_container" class="hidden mt-4">
+                                <p class="text-sm text-gray-600 mb-2">Preview:</p>
+                                <img id="preview_qris" src="" alt="Preview" class="max-w-full h-48 object-contain rounded-lg border border-gray-200 mx-auto">
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                                id="btnQris"
+                                disabled
+                                class="w-full bg-gray-300 text-gray-500 cursor-not-allowed px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg">
+                            ⚠️ Upload Bukti Pembayaran Dulu
                         </button>
                     </form>
                 </div>
@@ -348,6 +422,54 @@ function copyToClipboard(text) {
     }).catch(function() {
         alert('Nomor rekening: ' + text);
     });
+}
+
+// Preview image function
+function previewImage(input, previewId) {
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+    const container = document.getElementById(previewId + '_container');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            container.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Check QRIS form validity
+function checkQrisForm() {
+    const buktiInput = document.getElementById('bukti_qris');
+    const submitBtn = document.getElementById('btnQris');
+    
+    if (buktiInput && buktiInput.files.length > 0) {
+        submitBtn.disabled = false;
+        submitBtn.className = 'w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer';
+        submitBtn.innerHTML = '✅ Konfirmasi Pembayaran QRIS';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.className = 'w-full bg-gray-300 text-gray-500 cursor-not-allowed px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg';
+        submitBtn.innerHTML = '⚠️ Upload Bukti Pembayaran Dulu';
+    }
+}
+
+// Check Bank form validity
+function checkBankForm() {
+    const buktiInput = document.getElementById('bukti_bank');
+    const submitBtn = document.getElementById('btnBank');
+    
+    if (buktiInput && buktiInput.files.length > 0) {
+        submitBtn.disabled = false;
+        submitBtn.className = 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer';
+        submitBtn.innerHTML = '✅ Konfirmasi Transfer Selesai';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.className = 'bg-gray-300 text-gray-500 cursor-not-allowed px-10 py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg';
+        submitBtn.innerHTML = '⚠️ Upload Bukti Transfer Dulu';
+    }
 }
 
 // Animation untuk elemen saat load

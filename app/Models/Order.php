@@ -17,10 +17,14 @@ class Order extends Model
         'status_makanan',
         'keterangan',
         'started_at',
+        'payment_method',
+        'bukti_transfer',
+        'paid_at',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
+        'paid_at'    => 'datetime',
     ];
 
     public function orderItems()
