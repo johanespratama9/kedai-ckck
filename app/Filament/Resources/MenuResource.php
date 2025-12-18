@@ -60,8 +60,8 @@ class MenuResource extends Resource
                     ->html()
                     ->formatStateUsing(function ($state) {
                         return $state
-                        ? '<img src="' . asset('storage/' . $state) . '" width="100"/>'
-                        : '<span class="text-gray-400">Belum dibuat</span>';
+                            ? '<img src="' . asset('storage/' . $state) . '" width="100"/>'
+                            : '<span class="text-gray-400">Belum dibuat</span>';
                     }),
 
                 TextColumn::make('nama')->searchable(),
