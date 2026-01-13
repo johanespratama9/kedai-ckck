@@ -13,7 +13,7 @@ class EditDapur extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->visible(fn() => auth()->user()->role === 'admin' || auth()->user()->role === 'dapur'),
+                ->visible(fn() => auth()->user()->role === 'admin'),
         ];
     }
 }

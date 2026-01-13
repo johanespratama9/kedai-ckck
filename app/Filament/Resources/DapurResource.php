@@ -110,7 +110,7 @@ class DapurResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->visible(fn(Order $record) => 
                         $record->approval_status === 'pending_approval' && 
-                        (auth()->user()->role === 'admin' || auth()->user()->role === 'dapur')
+                        auth()->user()->role === 'admin'
                     ),
                 
                 Tables\Actions\Action::make('lihat_bukti')
@@ -128,7 +128,7 @@ class DapurResource extends Resource
                     ->openUrlInNewTab()
                     ->color('primary'),
 
-                // Dropdown Approval Actions
+                // Dropdown Approval Actions - Hanya untuk Admin
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('approve_order')
                         ->label('✅ Setujui Order')
@@ -175,7 +175,10 @@ class DapurResource extends Resource
                     ->label('📋 Approval')
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->color('warning')
-                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+                    ->visible(fn(Order $record) => 
+                        $record->approval_status === 'pending_approval' && 
+                        auth()->user()->role === 'admin'
+                    ),
             ])
             // Hilangkan DeleteBulkAction
             ->bulkActions([
