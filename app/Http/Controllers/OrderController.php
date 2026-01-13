@@ -123,10 +123,11 @@ class OrderController extends Controller
     {
         $order->status         = 'submitted';
         $order->status_makanan = 'pesanan diterima';
+        $order->approval_status = 'pending_approval'; // Set ke pending approval
         $order->save();
 
         return redirect()->route('order.invoice', $order->id)
-            ->with('success', 'Order berhasil disubmit!');
+            ->with('success', 'Order berhasil disubmit! Menunggu persetujuan dari admin/kasir.');
 
     }
 
@@ -138,11 +139,29 @@ class OrderController extends Controller
 
     public function showPayment(Order $order)
     {
+        // Jika order sudah paid, redirect ke invoice
+        if ($order->status === 'paid') {
+            return redirect()->route('order.invoice', $order->id)
+                ->with('info', 'Order sudah disetujui dan diproses. Terima kasih!');
+        }
+
         return view('order.payment', compact('order'));
     }
 
     public function processPayment(Order $order, Request $request)
     {
+        // Jika GET request, tampilkan form
+        if ($request->method() === 'GET') {
+            // Parse payment_method dari query string jika ada
+            $paymentMethod = $request->query('payment_method');
+            if (!$paymentMethod) {
+                // Redirect ke payment page jika payment_method tidak diberikan
+                return redirect()->route('order.payment', $order->id);
+            }
+            return view('order.payment-process', compact('order', 'paymentMethod'));
+        }
+
+        // Jika POST request, validasi payment_method
         $request->validate([
             'payment_method' => 'required|in:cash,qris,bank_transfer,ewallet',
         ]);
@@ -154,6 +173,11 @@ class OrderController extends Controller
 
     public function confirmPayment(Order $order, Request $request)
     {
+        // Cek apakah order sudah disetujui/paid
+        if ($order->status !== 'paid') {
+            return redirect()->back()->with('error', 'Order belum disetujui oleh admin/kasir. Pembayaran tidak bisa diproses.');
+        }
+
         $paymentMethod = $request->payment_method;
 
         // Validasi berdasarkan metode pembayaran
@@ -178,18 +202,16 @@ class OrderController extends Controller
             $buktiPath = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
         }
 
-        // Update order status to paid
+        // Update order dengan payment method dan bukti transfer
         $order->update([
-            'status'         => 'paid',
-            'status_makanan' => 'diproses',
             'payment_method' => $request->payment_method,
             'bukti_transfer' => $buktiPath,
-            'paid_at'        => now(),
+            'status_makanan' => 'pesanan sedang diproses',
         ]);
 
         // Redirect to invoice with success message
         return redirect()->route('order.invoice', $order->id)
-            ->with('success', 'Pembayaran berhasil dikonfirmasi! Pesanan sedang diproses.');
+            ->with('success', 'Pembayaran berhasil dikonfirmasi! Pesanan sedang diproses di dapur.');
     }
 
     public function downloadInvoicePdf(Order $order)
@@ -237,6 +259,58 @@ class OrderController extends Controller
             'customer_name'  => $order->customer_name,
             'nomor_meja'     => $order->nomor_meja,
         ]);
+    }
+
+    /**
+     * Tampilkan daftar order yang menunggu persetujuan
+     */
+    public function showPendingApproval()
+    {
+        $pendingOrders = Order::where('approval_status', 'pending_approval')
+            ->with('orderItems.menu', 'approvedBy')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('order.pending-approval', compact('pendingOrders'));
+    }
+
+    /**
+     * Approve order
+     */
+    public function approveOrder(Order $order)
+    {
+        $order->update([
+            'approval_status' => 'approved',
+            'approved_at'     => now(),
+            'approved_by'     => auth()->id(),
+            'status'          => 'paid',  // Set status ke paid saat diapprove
+            'paid_at'         => now(),
+            'status_makanan'  => 'pesanan diterima',
+        ]);
+
+        return redirect()->back()->with('success', "Order #{$order->id} berhasil disetujui dan siap diproses!");
+    }
+
+    /**
+     * Reject order dengan alasan
+     */
+    public function rejectOrder(Request $request, Order $order)
+    {
+        $request->validate([
+            'rejection_reason' => 'required|string|min:5|max:500',
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan wajib diisi',
+            'rejection_reason.min'      => 'Alasan minimal 5 karakter',
+            'rejection_reason.max'      => 'Alasan maksimal 500 karakter',
+        ]);
+
+        $order->update([
+            'approval_status'  => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+            'approved_by'      => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', "Order #{$order->id} berhasil ditolak!");
     }
 
 }

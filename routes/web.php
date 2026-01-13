@@ -20,8 +20,15 @@ Route::post('/order/{order}/pay', [OrderController::class, 'pay'])->name('order.
 
 // Payment routes
 Route::get('/order/{order}/payment', [OrderController::class, 'showPayment'])->name('order.payment');
-Route::post('/order/{order}/process-payment', [OrderController::class, 'processPayment'])->name('order.processPayment');
+Route::match(['get', 'post'], '/order/{order}/process-payment', [OrderController::class, 'processPayment'])->name('order.processPayment');
 Route::post('/order/{order}/confirm-payment', [OrderController::class, 'confirmPayment'])->name('order.confirmPayment');
+
+// Approval routes (Admin & Kasir only)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/order/approval/pending', [OrderController::class, 'showPendingApproval'])->name('order.pendingApproval');
+    Route::post('/order/{order}/approve', [OrderController::class, 'approveOrder'])->name('order.approve');
+    Route::post('/order/{order}/reject', [OrderController::class, 'rejectOrder'])->name('order.reject');
+});
 
 // Export sales to Excel
 Route::get('/sales/export', function () {

@@ -65,6 +65,20 @@ class DapurResource extends Resource
                     ->label('Status')
                     ->visible(false),
 
+                Tables\Columns\BadgeColumn::make('approval_status')
+                    ->label('Approval')
+                    ->colors([
+                        'warning' => 'pending_approval',
+                        'success' => 'approved',
+                        'danger'  => 'rejected',
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'pending_approval' => '⏳ Pending',
+                        'approved' => '✅ Approved',
+                        'rejected' => '❌ Rejected',
+                        default => $state
+                    }),
+
                 Tables\Columns\BadgeColumn::make('status_makanan')
                     ->label('Status Makanan')
                     ->colors([
@@ -81,14 +95,61 @@ class DapurResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->visible(fn(Order $record) => $record->status === 'submitted'),
                 Tables\Actions\Action::make('lihat_invoice')
                     ->label('Lihat Invoice')
                     ->icon('heroicon-o-document-text')
                     ->url(fn(Order $record) => route('order.invoice', $record))
                     ->openUrlInNewTab()
                     ->color('primary'),
+
+                // Dropdown Approval Actions
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('approve_order')
+                        ->label('✅ Setujui Order')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Setujui Order')
+                        ->modalDescription('Anda yakin ingin menyetujui order ini?')
+                        ->modalSubmitActionLabel('Ya, Setujui')
+                        ->modalCancelActionLabel('Batal')
+                        ->action(function (Order $record) {
+                            $record->update([
+                                'approval_status' => 'approved',
+                                'approved_at'     => now(),
+                                'approved_by'     => auth()->id(),
+                                'status'          => 'paid',  // Set status ke paid saat diapprove
+                                'paid_at'         => now(),
+                                'status_makanan'  => 'pesanan diterima',
+                            ]);
+                        })
+                        ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+
+                    Tables\Actions\Action::make('reject_order')
+                        ->label('❌ Tolak Order')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Textarea::make('rejection_reason')
+                                ->label('Alasan Penolakan')
+                                ->placeholder('Jelaskan alasan penolakan order...')
+                                ->required()
+                                ->minLength(5)
+                                ->maxLength(500),
+                        ])
+                        ->action(function (Order $record, array $data) {
+                            $record->update([
+                                'approval_status'  => 'rejected',
+                                'rejection_reason' => $data['rejection_reason'],
+                                'approved_by'      => auth()->id(),
+                            ]);
+                        })
+                        ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+                ])
+                    ->label('📋 Approval')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->color('warning')
+                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
             ])
             // Hilangkan DeleteBulkAction
             ->bulkActions([

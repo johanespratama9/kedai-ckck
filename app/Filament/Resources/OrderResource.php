@@ -67,6 +67,20 @@ class OrderResource extends Resource
                     ->label('keterangan')
                     ->searchable(), // ✅ tambahkan searchable
 
+                Tables\Columns\BadgeColumn::make('approval_status')
+                    ->label('Approval Status')
+                    ->colors([
+                        'warning' => 'pending_approval',
+                        'success' => 'approved',
+                        'danger'  => 'rejected',
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'pending_approval' => '⏳ Pending',
+                        'approved' => '✅ Approved',
+                        'rejected' => '❌ Rejected',
+                        default => $state
+                    }),
+
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status Pembayaran')
                     ->colors([
@@ -106,6 +120,67 @@ class OrderResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 // Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+
+                // Approve Action
+                Tables\Actions\Action::make('approve')
+                    ->label('✅ Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Setujui Order')
+                    ->modalDescription('Anda yakin ingin menyetujui order ini?')
+                    ->action(function (Order $record) {
+                        $record->update([
+                            'approval_status' => 'approved',
+                            'approved_at'     => now(),
+                            'approved_by'     => auth()->id(),
+                        ]);
+                    })
+                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+
+                // Reject Action
+                Tables\Actions\Action::make('reject')
+                    ->label('❌ Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->form([
+                        Forms\Components\Textarea::make('rejection_reason')
+                            ->label('Alasan Penolakan')
+                            ->placeholder('Jelaskan alasan penolakan order...')
+                            ->required()
+                            ->minLength(5)
+                            ->maxLength(500),
+                    ])
+                    ->action(function (Order $record, array $data) {
+                        $record->update([
+                            'approval_status'  => 'rejected',
+                            'rejection_reason' => $data['rejection_reason'],
+                            'approved_by'      => auth()->id(),
+                        ]);
+                    })
+                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+
+                // Show status badge
+                Tables\Actions\Action::make('view_status')
+                    ->label(fn(Order $record) => match($record->approval_status) {
+                        'approved' => '✅ Approved',
+                        'rejected' => '❌ Rejected',
+                        'pending_approval' => '⏳ Pending',
+                        default => $record->approval_status
+                    })
+                    ->color(fn(Order $record) => match($record->approval_status) {
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'pending_approval' => 'warning',
+                        default => 'gray'
+                    })
+                    ->disabled()
+                    ->icon(fn(Order $record) => match($record->approval_status) {
+                        'approved' => 'heroicon-o-check-circle',
+                        'rejected' => 'heroicon-o-x-circle',
+                        'pending_approval' => 'heroicon-o-clock',
+                        default => 'heroicon-o-question-mark-circle'
+                    }),
 
                 // Tables\Actions\Action::make('submit_makanan'),
                 // ->label('Submit Makanan')
