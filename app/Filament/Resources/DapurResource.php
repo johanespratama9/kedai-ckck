@@ -79,6 +79,18 @@ class DapurResource extends Resource
                         default => $state
                     }),
 
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Metode Bayar')
+                    ->formatStateUsing(fn($state) => $state ? strtoupper(str_replace('_', ' ', $state)) : '-')
+                    ->badge()
+                    ->color(fn($state) => $state ? 'success' : 'gray'),
+
+                Tables\Columns\ImageColumn::make('bukti_transfer')
+                    ->label('Bukti Transfer')
+                    ->disk('public')
+                    ->defaultImageUrl(fn($record) => !$record->bukti_transfer ? null : null)
+                    ->visibility('public'),
+
                 Tables\Columns\BadgeColumn::make('status_makanan')
                     ->label('Status Makanan')
                     ->colors([
@@ -95,6 +107,20 @@ class DapurResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
+                Tables\Actions\EditAction::make()
+                    ->visible(fn(Order $record) => 
+                        $record->approval_status === 'pending_approval' && 
+                        (auth()->user()->role === 'admin' || auth()->user()->role === 'dapur')
+                    ),
+                
+                Tables\Actions\Action::make('lihat_bukti')
+                    ->label('Lihat Bukti')
+                    ->icon('heroicon-o-photo')
+                    ->color('info')
+                    ->url(fn(Order $record) => $record->bukti_transfer ? asset('storage/' . $record->bukti_transfer) : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn(Order $record) => $record->bukti_transfer !== null),
+                
                 Tables\Actions\Action::make('lihat_invoice')
                     ->label('Lihat Invoice')
                     ->icon('heroicon-o-document-text')

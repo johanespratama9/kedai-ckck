@@ -67,7 +67,13 @@
                     </svg>
                     <div>
                         <h3 class="text-lg font-semibold text-yellow-800">⏳ Menunggu Persetujuan Admin</h3>
-                        <p class="text-yellow-700 text-sm mt-1">Order Anda sedang menunggu persetujuan dari admin/kasir. Silakan tunggu atau hubungi kasir untuk informasi lebih lanjut.</p>
+                        <p class="text-yellow-700 text-sm mt-1">
+                            @if($order->payment_method)
+                                Pembayaran Anda sudah dikonfirmasi. Admin sedang memeriksa bukti pembayaran. Silakan tunggu persetujuan.
+                            @else
+                                Order Anda menunggu pembayaran. Silakan lakukan pembayaran terlebih dahulu.
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
@@ -86,15 +92,27 @@
                     </div>
                 </div>
             </div>
-        @elseif($order->status === 'paid')
+        @elseif($order->status === 'paid' || $order->approval_status === 'approved')
             <div class="p-6 bg-green-50 border-l-4 border-green-400 space-y-3">
                 <div class="flex items-start space-x-3">
                     <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <div>
-                        <h3 class="text-lg font-semibold text-green-800">✅ Order Disetujui & Sudah Bayar</h3>
-                        <p class="text-green-700 text-sm mt-1">Order Anda telah disetujui oleh admin/kasir dan status pembayaran sudah tersimpan. Silakan lengkapi detail pembayaran atau unduh invoice.</p>
+                        <h3 class="text-lg font-semibold text-green-800">✅ Order Disetujui & Pembayaran Diterima</h3>
+                        <p class="text-green-700 text-sm mt-1">Pembayaran Anda telah diverifikasi dan disetujui oleh admin. Pesanan sedang diproses di dapur.</p>
+                    </div>
+                </div>
+            </div>
+        @elseif($order->status === 'submitted')
+            <div class="p-6 bg-blue-50 border-l-4 border-blue-400 space-y-3">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-800">💳 Silakan Lakukan Pembayaran</h3>
+                        <p class="text-blue-700 text-sm mt-1">Order Anda sudah dibuat. Silakan lakukan pembayaran untuk melanjutkan proses.</p>
                     </div>
                 </div>
             </div>
@@ -227,16 +245,25 @@
                         </svg>
                         Order Ditolak
                     </button>
+                @elseif($order->status === 'submitted' && !$order->payment_method)
+                    <!-- Belum bayar -->
+                    <a href="{{ route('order.payment', $order->id) }}"
+                        class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Lanjut ke Pembayaran
+                    </a>
                 @elseif($order->approval_status === 'pending_approval')
                     <!-- Menunggu persetujuan admin -->
-                    <button class="flex-1 bg-gray-400 cursor-not-allowed text-white text-center px-6 py-3 rounded-xl font-semibold opacity-75" disabled>
+                    <button class="flex-1 bg-yellow-400 cursor-not-allowed text-white text-center px-6 py-3 rounded-xl font-semibold opacity-75" disabled>
                         <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
-                        Tunggu Persetujuan Admin
+                        Menunggu Persetujuan Admin
                     </button>
-                @elseif($order->status === 'paid')
-                    <!-- Order sudah disetujui dan sudah bayar - langsung download invoice -->
+                @elseif($order->status === 'paid' || $order->approval_status === 'approved')
+                    <!-- Order sudah disetujui -->
                     <a href="{{ route('order.downloadInvoice', $order->id) }}"
                         class="flex-1 bg-brand-600 hover:bg-brand-700 text-white text-center px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +272,7 @@
                         Unduh Invoice (PDF)
                     </a>
                 @else
-                    <!-- Fallback untuk kondisi lain -->
+                    <!-- Fallback -->
                     <button class="flex-1 bg-gray-400 cursor-not-allowed text-white text-center px-6 py-3 rounded-xl font-semibold opacity-75" disabled>
                         <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>

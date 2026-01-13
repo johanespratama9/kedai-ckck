@@ -123,12 +123,11 @@ class OrderController extends Controller
     {
         $order->status         = 'submitted';
         $order->status_makanan = 'pesanan diterima';
-        $order->approval_status = 'pending_approval'; // Set ke pending approval
         $order->save();
 
-        return redirect()->route('order.invoice', $order->id)
-            ->with('success', 'Order berhasil disubmit! Menunggu persetujuan dari admin/kasir.');
-
+        // Redirect ke halaman pembayaran
+        return redirect()->route('order.payment', $order->id)
+            ->with('success', 'Order berhasil disubmit! Silakan lakukan pembayaran.');
     }
 
     public function invoice(Order $order)
@@ -139,12 +138,6 @@ class OrderController extends Controller
 
     public function showPayment(Order $order)
     {
-        // Jika order sudah paid, redirect ke invoice
-        if ($order->status === 'paid') {
-            return redirect()->route('order.invoice', $order->id)
-                ->with('info', 'Order sudah disetujui dan diproses. Terima kasih!');
-        }
-
         return view('order.payment', compact('order'));
     }
 
@@ -173,11 +166,6 @@ class OrderController extends Controller
 
     public function confirmPayment(Order $order, Request $request)
     {
-        // Cek apakah order sudah disetujui/paid
-        if ($order->status !== 'paid') {
-            return redirect()->back()->with('error', 'Order belum disetujui oleh admin/kasir. Pembayaran tidak bisa diproses.');
-        }
-
         $paymentMethod = $request->payment_method;
 
         // Validasi berdasarkan metode pembayaran
@@ -202,16 +190,17 @@ class OrderController extends Controller
             $buktiPath = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
         }
 
-        // Update order dengan payment method dan bukti transfer
+        // Update order dengan payment method, bukti transfer, dan set ke pending approval
         $order->update([
             'payment_method' => $request->payment_method,
             'bukti_transfer' => $buktiPath,
-            'status_makanan' => 'pesanan sedang diproses',
+            'approval_status' => 'pending_approval',
+            'status_makanan' => 'menunggu persetujuan',
         ]);
 
         // Redirect to invoice with success message
         return redirect()->route('order.invoice', $order->id)
-            ->with('success', 'Pembayaran berhasil dikonfirmasi! Pesanan sedang diproses di dapur.');
+            ->with('success', 'Pembayaran berhasil dikonfirmasi! Menunggu persetujuan admin.');
     }
 
     public function downloadInvoicePdf(Order $order)

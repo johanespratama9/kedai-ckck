@@ -2,6 +2,7 @@
 namespace App\Filament\Resources\DapurResource\Pages;
 
 use App\Filament\Resources\DapurResource;
+use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditDapur extends EditRecord
@@ -11,7 +12,8 @@ class EditDapur extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            // Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->visible(fn() => auth()->user()->role === 'admin' || auth()->user()->role === 'dapur'),
         ];
     }
 }
