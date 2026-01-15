@@ -50,25 +50,42 @@ class OrderResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Nama Konsumen')
-                    ->searchable(), // ✅ tambahkan searchable
+                    ->searchable()
+                    ->sortable()
+                    ->weight('medium')
+                    ->copyable()
+                    ->copyMessage('Nama tersalin')
+                    ->icon('heroicon-o-user'),
 
                 Tables\Columns\TextColumn::make('phone')
                     ->label('No. HP')
-                    ->searchable(), // ✅ tambahkan searchable
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('No. HP tersalin')
+                    ->icon('heroicon-o-phone'),
 
                 Tables\Columns\TextColumn::make('nomor_meja')
                     ->label('Meja')
-                    ->searchable(), // ✅ tambahkan searchable
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('info'),
+
                 Tables\Columns\TextColumn::make('keterangan')
-                    ->label('keterangan')
-                    ->searchable(), // ✅ tambahkan searchable
+                    ->label('Keterangan')
+                    ->searchable()
+                    ->limit(30)
+                    ->tooltip(fn($record) => $record->keterangan)
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\BadgeColumn::make('approval_status')
-                    ->label('Approval Status')
+                    ->label('Status Approval')
                     ->colors([
                         'warning' => 'pending_approval',
                         'success' => 'approved',
@@ -79,122 +96,147 @@ class OrderResource extends Resource
                         'approved' => '✅ Approved',
                         'rejected' => '❌ Rejected',
                         default => $state
-                    }),
+                    })
+                    ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Status Pembayaran')
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Metode Bayar')
+                    ->badge()
                     ->colors([
-                        'primary' => 'submitted',
-                        'danger'  => 'canceled',
+                        'success' => 'qris',
+                        'warning' => 'transfer',
+                        'info'    => 'cash',
                     ])
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'submitted' => 'Submitted',
-                        'pending'   => 'Pending',
-                        'canceled'  => 'Canceled',
-                        'paid'      => null, // Hide paid status
-                        default     => $state
+                        'qris' => 'QRIS',
+                        'transfer' => 'Transfer Bank',
+                        'cash' => 'Cash',
+                        default => $state ?? '-'
                     })
-                    ->visible(fn($record) => $record && $record->status && $record->status !== 'paid' && $record->status !== 'pending'),
-                // Tables\Columns\BadgeColumn::make('status_makanan')
-                //     ->label('Status Makanan')
-                //     ->colors([
-                //         'primary' => 'pesanan diterima',
-                //         'warning' => 'pesanan sedang diproses',
-                //         'success' => 'pesanan selesai',
-                //     ]),
+                    ->sortable(),
+
+                Tables\Columns\ImageColumn::make('bukti_transfer')
+                    ->label('Bukti Transfer')
+                    ->disk('public')
+                    ->defaultImageUrl(fn($record) => !$record->bukti_transfer ? null : null)
+                    ->visibility('public')
+                    ->visible(fn() => auth()->user()->role === 'admin')
+                    ->square()
+                    ->size(40),
 
                 Tables\Columns\TextColumn::make('total_harga')
-                    ->label('Total Harga')
-                    ->money('IDR'),
+                    ->label('Total')
+                    ->money('IDR')
+                    ->sortable()
+                    ->weight('bold')
+                    ->color('success'),
+
+                Tables\Columns\TextColumn::make('approvedBy.name')
+                    ->label('Disetujui Oleh')
+                    ->default('-')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-user-circle'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Tanggal')
-                    ->dateTime('d-m-Y H:i')
-                    ->sortable(), // ✅ tambahkan sortable
+                    ->label('Tanggal Order')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->toggleable(),
             ])
-            ->defaultSort('created_at', 'desc') // ✅ tampilkan data terbaru di atas
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                // Tambahkan filter jika perlu
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                // Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-
-                // Approve Action
-                Tables\Actions\Action::make('approve')
-                    ->label('✅ Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Setujui Order')
-                    ->modalDescription('Anda yakin ingin menyetujui order ini?')
-                    ->action(function (Order $record) {
-                        $record->update([
-                            'approval_status' => 'approved',
-                            'approved_at'     => now(),
-                            'approved_by'     => auth()->id(),
-                        ]);
-                    })
-                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
-
-                // Reject Action
-                Tables\Actions\Action::make('reject')
-                    ->label('❌ Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->label('Alasan Penolakan')
-                            ->placeholder('Jelaskan alasan penolakan order...')
-                            ->required()
-                            ->minLength(5)
-                            ->maxLength(500),
-                    ])
-                    ->action(function (Order $record, array $data) {
-                        $record->update([
-                            'approval_status'  => 'rejected',
-                            'rejection_reason' => $data['rejection_reason'],
-                            'approved_by'      => auth()->id(),
-                        ]);
-                    })
-                    ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
-
-                // Show status badge
-                Tables\Actions\Action::make('view_status')
-                    ->label(fn(Order $record) => match($record->approval_status) {
+                Tables\Filters\SelectFilter::make('approval_status')
+                    ->label('Status Approval')
+                    ->options([
+                        'pending_approval' => '⏳ Pending',
                         'approved' => '✅ Approved',
                         'rejected' => '❌ Rejected',
-                        'pending_approval' => '⏳ Pending',
-                        default => $record->approval_status
-                    })
-                    ->color(fn(Order $record) => match($record->approval_status) {
-                        'approved' => 'success',
-                        'rejected' => 'danger',
-                        'pending_approval' => 'warning',
-                        default => 'gray'
-                    })
-                    ->disabled()
-                    ->icon(fn(Order $record) => match($record->approval_status) {
-                        'approved' => 'heroicon-o-check-circle',
-                        'rejected' => 'heroicon-o-x-circle',
-                        'pending_approval' => 'heroicon-o-clock',
-                        default => 'heroicon-o-question-mark-circle'
-                    }),
+                    ]),
+                
+                Tables\Filters\SelectFilter::make('payment_method')
+                    ->label('Metode Pembayaran')
+                    ->options([
+                        'qris' => 'QRIS',
+                        'transfer' => 'Transfer Bank',
+                        'cash' => 'Cash',
+                    ]),
+            ])
+            ->actions([
+                // Lihat Invoice
+                Tables\Actions\Action::make('lihat_invoice')
+                    ->label('Invoice')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->url(fn(Order $record) => route('order.invoice', $record->id))
+                    ->openUrlInNewTab(),
 
-                // Tables\Actions\Action::make('submit_makanan'),
-                // ->label('Submit Makanan')
-                // ->icon('heroicon-o-check-circle')
-                // ->color('success')
-                // ->action(function (Order $record) {
-                //     $record->status_makanan = 'pesanan diterima';
-                //     $record->save();
-                // })
-                // ->requiresConfirmation()
-                // ->visible(fn(Order $record) => $record->status_makanan !== 'pesanan diterima'),
+                // Lihat Bukti Transfer (Admin only)
+                Tables\Actions\Action::make('lihat_bukti')
+                    ->label('Bukti')
+                    ->icon('heroicon-o-photo')
+                    ->color('info')
+                    ->url(fn(Order $record) => $record->bukti_transfer ? asset('storage/' . $record->bukti_transfer) : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn(Order $record) => 
+                        $record->bukti_transfer !== null && 
+                        auth()->user()->role === 'admin'
+                    ),
+
+                // Approval Actions Group
+                Tables\Actions\ActionGroup::make([
+                    // Approve Action
+                    Tables\Actions\Action::make('approve')
+                        ->label('Setujui')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Setujui Order')
+                        ->modalDescription('Anda yakin ingin menyetujui order ini?')
+                        ->modalSubmitActionLabel('Ya, Setujui')
+                        ->action(function (Order $record) {
+                            $record->update([
+                                'approval_status' => 'approved',
+                                'approved_at'     => now(),
+                                'approved_by'     => auth()->id(),
+                            ]);
+                        })
+                        ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+
+                    // Reject Action
+                    Tables\Actions\Action::make('reject')
+                        ->label('Tolak')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Textarea::make('rejection_reason')
+                                ->label('Alasan Penolakan')
+                                ->placeholder('Jelaskan alasan penolakan order...')
+                                ->required()
+                                ->minLength(5)
+                                ->maxLength(500)
+                                ->rows(3),
+                        ])
+                        ->modalSubmitActionLabel('Tolak Order')
+                        ->action(function (Order $record, array $data) {
+                            $record->update([
+                                'approval_status'  => 'rejected',
+                                'rejection_reason' => $data['rejection_reason'],
+                                'approved_by'      => auth()->id(),
+                            ]);
+                        })
+                        ->visible(fn(Order $record) => $record->approval_status === 'pending_approval'),
+
+                    // View Detail
+                    Tables\Actions\ViewAction::make()
+                        ->label('Detail'),
+                ])
+                ->label('Aksi')
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->button()
+                ->color('gray'),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                // Remove bulk delete
             ]);
     }
 

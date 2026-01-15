@@ -89,7 +89,8 @@ class DapurResource extends Resource
                     ->label('Bukti Transfer')
                     ->disk('public')
                     ->defaultImageUrl(fn($record) => !$record->bukti_transfer ? null : null)
-                    ->visibility('public'),
+                    ->visibility('public')
+                    ->visible(fn() => auth()->user()->role === 'admin'),
 
                 Tables\Columns\BadgeColumn::make('status_makanan')
                     ->label('Status Makanan')
@@ -119,7 +120,10 @@ class DapurResource extends Resource
                     ->color('info')
                     ->url(fn(Order $record) => $record->bukti_transfer ? asset('storage/' . $record->bukti_transfer) : null)
                     ->openUrlInNewTab()
-                    ->visible(fn(Order $record) => $record->bukti_transfer !== null),
+                    ->visible(fn(Order $record) => 
+                        $record->bukti_transfer !== null && 
+                        auth()->user()->role === 'admin'
+                    ),
                 
                 Tables\Actions\Action::make('lihat_invoice')
                     ->label('Lihat Invoice')
