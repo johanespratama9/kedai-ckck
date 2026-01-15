@@ -193,6 +193,14 @@
                                     <tr class="hover:bg-slate-25">
                                         <td class="py-4 px-6">
                                             <div class="font-medium text-slate-900">{{ optional($item->menu)->nama ?? '-' }}</div>
+                                            @if($item->note_selera)
+                                                <div class="text-xs text-orange-600 mt-1 flex items-center">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                    <em>{{ $item->note_selera }}</em>
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="py-4 px-6 text-center">
                                             <span class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full font-semibold">{{ $item->quantity }}</span>
@@ -284,5 +292,112 @@
         </div>
     </div>
 </div>
-</bod
+
+<!-- Notification Container -->
+<div id="notificationContainer" class="fixed bottom-4 right-4 space-y-3 z-50"></div>
+
+<script>
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    
+    // Cek apakah notification dengan pesan yang sama sudah ada
+    const existing = Array.from(container.children).find(el => el.textContent.includes(message.substring(0, 20)));
+    if (existing) return; // Jangan duplicate
+    
+    const bgColor = {
+        'success': 'bg-green-500',
+        'warning': 'bg-yellow-500',
+        'info': 'bg-blue-500',
+        'error': 'bg-red-500'
+    }[type] || 'bg-blue-500';
+    
+    const notification = document.createElement('div');
+    notification.className = `${bgColor} text-white px-6 py-4 rounded-xl shadow-lg animate-fade-in`;
+    notification.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove setelah 5 detik
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Polling untuk status order
+let pollingInterval;
+let hasNotifiedApproval = false;
+let hasNotifiedRejection = false;
+
+function checkOrderStatus() {
+    const orderId = {{ $order->id }};
+    
+    fetch(`/api/order/${orderId}/status`)
+        .then(response => response.json())
+        .then(data => {
+            // Notifikasi saat approved (hanya sekali)
+            if (data.approval_status === 'approved' && !hasNotifiedApproval) {
+                const adminName = data.approved_by_name || 'Admin';
+                const approvedTime = data.approved_at || '';
+                showNotification(`✅ Pesanan diterima oleh ${adminName} pada ${approvedTime}`, 'success');
+                hasNotifiedApproval = true;
+                
+                // Auto reload halaman setelah 2 detik
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+            
+            // Notifikasi saat rejected (hanya sekali)
+            if (data.approval_status === 'rejected' && !hasNotifiedRejection) {
+                const adminName = data.approved_by_name || 'Admin';
+                showNotification(`❌ Pesanan ditolak oleh ${adminName}. Cek alasan penolakan di atas.`, 'error');
+                hasNotifiedRejection = true;
+                
+                // Auto reload halaman setelah 2 detik
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        })
+        .catch(error => console.error('Error checking order status:', error));
+}
+
+// Mulai polling jika status masih pending_approval
+@if($order->approval_status === 'pending_approval')
+    // Check status setiap 3 detik
+    pollingInterval = setInterval(checkOrderStatus, 3000);
+    // Juga check sekali saat page load
+    checkOrderStatus();
+@endif
+
+// Tambahkan CSS untuk animation
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+</body>
 </html>

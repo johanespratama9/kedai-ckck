@@ -35,8 +35,10 @@ class OrderController extends Controller
             'phone'         => 'required|regex:/^[0-9]+$/|min:10|max:15',
             'keterangan'    => 'nullable|string',
             'selected_menu' => 'required|exists:menus,id',
-            'quantity'      => 'required|array',
-            'quantity.*'    => 'required|integer|min:1',
+            'quantity_modal' => 'nullable|integer|min:1',
+            'quantity'      => 'nullable|array',
+            'quantity.*'    => 'nullable|integer|min:1',
+            'note_selera'   => 'nullable|string|max:500',
         ], [
             'phone.regex'    => 'No. HP hanya boleh berisi angka (0-9)',
             'phone.min'      => 'No. HP minimal 10 angka',
@@ -45,7 +47,8 @@ class OrderController extends Controller
         ]);
 
         $menuId   = $data['selected_menu'];
-        $quantity = $data['quantity'][$menuId] ?? 1;
+        // Quantity bisa dari modal atau dari form biasa
+        $quantity = $data['quantity_modal'] ?? ($data['quantity'][$menuId] ?? 1);
 
         // Cari menu
         $menu     = Menu::findOrFail($menuId);
@@ -58,19 +61,20 @@ class OrderController extends Controller
         $order->total_harga += $subtotal;
         $order->save();
 
-        // Tambah item ke order
+        // Tambah item ke order dengan note_selera
         OrderItem::create([
-            'order_id' => $order->id,
-            'menu_id'  => $menu->id,
-            'quantity' => $quantity,
-            'subtotal' => $subtotal,
+            'order_id'    => $order->id,
+            'menu_id'     => $menu->id,
+            'quantity'    => $quantity,
+            'subtotal'    => $subtotal,
+            'note_selera' => $data['note_selera'] ?? null,
         ]);
 
         // Kurangi stok
         $menu->stok -= $quantity;
         $menu->save();
 
-        return redirect()->back()->with('success', 'Item berhasil ditambahkan!');
+        return redirect()->back()->with('success', "✅ {$menu->nama} (x{$quantity}) berhasil ditambahkan ke keranjang!");
     }
 
     public function editItem(Request $request, OrderItem $item)
